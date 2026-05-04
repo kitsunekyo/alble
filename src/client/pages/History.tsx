@@ -12,6 +12,12 @@ import { Card } from "@/client/components/ui/card";
 import { Input } from "@/client/components/ui/input";
 import { Badge } from "@/client/components/ui/badge";
 import {
+  DurationInput,
+  durationPartsToSeconds,
+  secondsToDurationParts,
+  type DurationParts,
+} from "@/client/components/DurationInput";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -223,7 +229,7 @@ function StepRow({ step }: { step: StepDTO }) {
   const [editing, setEditing] = useState(false);
   const updateStep = useUpdateStep();
   const deleteStep = useDeleteStep();
-  const [dur, setDur] = useState(String(step.duration_seconds));
+  const [dur, setDur] = useState<DurationParts>(secondsToDurationParts(step.duration_seconds));
   const [rating, setRating] = useState<Rating>(step.rating);
 
   if (!editing) {
@@ -236,7 +242,7 @@ function StepRow({ step }: { step: StepDTO }) {
       >
         <span className="text-muted-foreground w-6 text-center">{step.step_number}</span>
         <span className="flex-1 tabular-nums">
-          {step.duration_seconds}s · {formatDuration(step.duration_seconds)}
+          {formatDuration(step.duration_seconds)}
         </span>
         <span className="text-muted-foreground">{step.rating}</span>
         <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
@@ -260,17 +266,12 @@ function StepRow({ step }: { step: StepDTO }) {
     <div className="space-y-2 p-2 border rounded-md">
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground w-6 text-center text-sm">{step.step_number}</span>
-        <Input
-          type="number"
-          inputMode="numeric"
-          value={dur}
-          onChange={(e) => setDur(e.target.value)}
-        />
+        <DurationInput value={dur} onChange={setDur} className="flex-1" />
         <Button
           size="sm"
           onClick={() => {
-            const v = Number.parseInt(dur, 10);
-            if (!Number.isFinite(v) || v < 0) {
+            const v = durationPartsToSeconds(dur);
+            if (v === null || v > 86_400) {
               toast.error("Dauer ungültig");
               return;
             }

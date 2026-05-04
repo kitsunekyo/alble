@@ -81,7 +81,7 @@ export function Charts() {
                 type="number"
                 dataKey="y"
                 name="Dauer"
-                tickFormatter={(v) => `${v}s`}
+                tickFormatter={(v) => formatDuration(Number(v))}
                 tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
               />
               <Tooltip
@@ -95,7 +95,7 @@ export function Charts() {
                         <strong>{formatDate(p.date)}</strong> · Schritt {p.step}
                       </div>
                       <div className="tabular-nums">
-                        {p.y}s · {formatDuration(p.y)}
+                        {formatDuration(p.y)}
                       </div>
                       <div style={{ color: RATING_COLORS[p.rating] }}>{p.rating}</div>
                     </div>
@@ -185,7 +185,7 @@ export function Charts() {
                 }}
               />
               <YAxis
-                tickFormatter={(v) => `${v}s`}
+                tickFormatter={(v) => formatDuration(Number(v))}
                 tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
               />
               <Tooltip
@@ -196,7 +196,7 @@ export function Charts() {
                   fontSize: 12,
                 }}
                 labelFormatter={(label) => formatTimestampDate(Number(label))}
-                formatter={(v) => [`${v}s · ${formatDuration(Number(v))}`, "⌀ Dauer"]}
+                formatter={(v) => [formatDuration(Number(v)), "⌀ Dauer"]}
               />
               <Line
                 type="monotone"
@@ -229,7 +229,7 @@ export function Charts() {
                 type="number"
                 dataKey="y"
                 name="Dauer"
-                tickFormatter={(v) => `${v}s`}
+                tickFormatter={(v) => formatDuration(Number(v))}
                 tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
               />
               <Tooltip
@@ -241,7 +241,7 @@ export function Charts() {
                     <div className="rounded-md border bg-background p-2 text-xs shadow-md">
                       <div style={{ color: RATING_COLORS[p.rating] }}>{p.rating}</div>
                       <div className="tabular-nums">
-                        {p.y}s · {formatDuration(p.y)}
+                        {formatDuration(p.y)}
                       </div>
                       <div className="text-muted-foreground">{formatDate(p.date)}</div>
                     </div>

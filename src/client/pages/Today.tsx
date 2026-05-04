@@ -2,9 +2,14 @@ import { useState } from "react";
 import { Loader2, Trash2, Pencil, Check, X } from "lucide-react";
 import { useTodaySession, useAddStep, useDeleteStep, useUpdateStep } from "@/client/hooks/use-sessions";
 import { Button } from "@/client/components/ui/button";
-import { Input } from "@/client/components/ui/input";
 import { Card } from "@/client/components/ui/card";
 import { RatingPicker } from "@/client/components/RatingPicker";
+import {
+  DurationInput,
+  durationPartsToSeconds,
+  secondsToDurationParts,
+  type DurationParts,
+} from "@/client/components/DurationInput";
 import { formatDuration, type Rating } from "@/shared/ratings";
 import { formatDate, formatWeekday, getCalendarWeek } from "@/shared/dates";
 import { toast } from "sonner";
@@ -15,7 +20,7 @@ export function Today() {
   const addStep = useAddStep();
   const deleteStep = useDeleteStep();
 
-  const [duration, setDuration] = useState("");
+  const [duration, setDuration] = useState<DurationParts>({ hours: "", minutes: "", seconds: "" });
   const [rating, setRating] = useState<Rating | null>(null);
 
   if (session.isLoading || !session.data) {
@@ -31,8 +36,8 @@ export function Today() {
   const weekLabel = s.date ? getCalendarWeek(s.date).label : null;
 
   function submit() {
-    const dur = Number.parseInt(duration, 10);
-    if (!Number.isFinite(dur) || dur < 0) {
+    const dur = durationPartsToSeconds(duration);
+    if (dur === null || dur > 86_400) {
       toast.error("Dauer ungültig");
       return;
     }
@@ -44,7 +49,7 @@ export function Today() {
       { sessionId: s.id, input: { duration_seconds: dur, rating } },
       {
         onSuccess: () => {
-          setDuration("");
+          setDuration({ hours: "", minutes: "", seconds: "" });
           setRating(null);
         },
         onError: (e) => toast.error(e.message),
@@ -86,17 +91,7 @@ export function Today() {
         <div className="max-w-2xl mx-auto space-y-3">
           <div className="flex gap-2">
             <div className="flex-1">
-              <Input
-                type="number"
-                inputMode="numeric"
-                placeholder="Dauer (Sekunden)"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") submit();
-                }}
-                min={0}
-              />
+              <DurationInput value={duration} onChange={setDuration} onEnter={submit} />
             </div>
             <Button onClick={submit} disabled={addStep.isPending} className="min-w-20">
               {addStep.isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
@@ -112,7 +107,9 @@ export function Today() {
 function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
   const updateStep = useUpdateStep();
   const [editing, setEditing] = useState(false);
-  const [draftDur, setDraftDur] = useState(String(step.duration_seconds));
+  const [draftDur, setDraftDur] = useState<DurationParts>(
+    secondsToDurationParts(step.duration_seconds),
+  );
   const [draftRating, setDraftRating] = useState<Rating>(step.rating);
 
   if (!editing) {
@@ -121,7 +118,7 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
         <div className="text-sm text-muted-foreground w-8 text-center">{step.step_number}</div>
         <div className="flex-1 min-w-0">
           <div className="font-medium tabular-nums">
-            {step.duration_seconds}s · {formatDuration(step.duration_seconds)}
+            {formatDuration(step.duration_seconds)}
           </div>
           <div className="text-sm text-muted-foreground">{step.rating}</div>
         </div>
@@ -136,8 +133,8 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
   }
 
   function save() {
-    const dur = Number.parseInt(draftDur, 10);
-    if (!Number.isFinite(dur) || dur < 0) {
+    const dur = durationPartsToSeconds(draftDur);
+    if (dur === null || dur > 86_400) {
       toast.error("Dauer ungültig");
       return;
     }
@@ -154,11 +151,10 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
     <Card className="p-3 space-y-3">
       <div className="flex items-center gap-2">
         <div className="text-sm text-muted-foreground w-8 text-center">{step.step_number}</div>
-        <Input
-          type="number"
-          inputMode="numeric"
+        <DurationInput
           value={draftDur}
-          onChange={(e) => setDraftDur(e.target.value)}
+          onChange={setDraftDur}
+          onEnter={save}
           className="flex-1"
         />
         <Button variant="ghost" size="icon" onClick={save} aria-label="Speichern">

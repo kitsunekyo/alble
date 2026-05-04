@@ -25,9 +25,11 @@ export const RATING_COLORS: Record<Rating, string> = {
 };
 
 export function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (m === 0) return `${s}s`;
-  if (s === 0) return `${m}m`;
-  return `${m}m ${s}s`;
+
+  if (h > 0) return `${h}h${m > 0 ? `${m}m` : ""}${s > 0 ? `${s}s` : ""}`;
+  if (m > 0) return `${m}m${s > 0 ? `${s}s` : ""}`;
+  return `${s}s`;
 }
