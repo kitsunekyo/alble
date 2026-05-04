@@ -89,7 +89,7 @@ export function Today() {
 
       <Card className="p-4 fixed md:static left-0 right-0 bottom-16 md:bottom-auto z-30 rounded-none md:rounded-xl border-t md:border bg-background">
         <div className="max-w-2xl mx-auto space-y-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-end">
             <div className="flex-1">
               <DurationInput value={duration} onChange={setDuration} onEnter={submit} />
             </div>
@@ -149,7 +149,7 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
 
   return (
     <Card className="p-3 space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-end gap-2">
         <div className="text-sm text-muted-foreground w-8 text-center">{step.step_number}</div>
         <DurationInput
           value={draftDur}

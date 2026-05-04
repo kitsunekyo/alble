@@ -139,7 +139,7 @@ function SessionCard({ session }: { session: SessionDTO }) {
       >
         {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-2">
             <span className="font-medium">
               {session.date ? formatDate(session.date) : `Trainingstag ${session.global_day}`}
             </span>
@@ -264,7 +264,7 @@ function StepRow({ step }: { step: StepDTO }) {
 
   return (
     <div className="space-y-2 p-2 border rounded-md">
-      <div className="flex items-center gap-2">
+      <div className="flex items-end gap-2">
         <span className="text-muted-foreground w-6 text-center text-sm">{step.step_number}</span>
         <DurationInput value={dur} onChange={setDur} className="flex-1" />
         <Button
