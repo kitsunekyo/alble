@@ -7,6 +7,14 @@ export interface CsvParseResult {
   errors: { line: number; message: string }[];
 }
 
+const LEGACY_RATINGS: Record<string, { rating: Rating; note?: string }> = {
+  Pause: { rating: "Abbruch" },
+  "Bitte anschauen": {
+    rating: "Schlecht",
+    note: "Bitte anschauen: migrated from previous rating",
+  },
+};
+
 const REQUIRED_COLUMNS = ["global_day", "step", "trennungszeit_seconds", "bewertung"] as const;
 
 export function parseCsv(text: string): CsvParseResult {
@@ -56,7 +64,8 @@ export function parseCsv(text: string): CsvParseResult {
       errors.push({ line: lineNo, message: `Invalid duration: ${get("trennungszeit_seconds")}` });
       continue;
     }
-    if (!RATINGS.includes(ratingRaw as Rating)) {
+    const normalized = normalizeRating(ratingRaw);
+    if (!normalized) {
       errors.push({ line: lineNo, message: `Unknown rating: ${ratingRaw}` });
       continue;
     }
@@ -70,11 +79,17 @@ export function parseCsv(text: string): CsvParseResult {
       global_day: globalDay,
       step,
       trennungszeit_seconds: duration,
-      bewertung: ratingRaw as Rating,
+      bewertung: normalized.rating,
+      note: normalized.note ?? null,
     });
   }
 
   return { rows, errors };
+}
+
+function normalizeRating(value: string): { rating: Rating; note?: string } | null {
+  if (RATINGS.includes(value as Rating)) return { rating: value as Rating };
+  return LEGACY_RATINGS[value] ?? null;
 }
 
 function splitCsvLine(line: string): string[] {

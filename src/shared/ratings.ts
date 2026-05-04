@@ -2,8 +2,8 @@ export const RATINGS = [
   "Ausgezeichnet",
   "Gut",
   "Mittel",
-  "Bitte anschauen",
-  "Pause",
+  "Schlecht",
+  "Abbruch",
 ] as const;
 
 export type Rating = (typeof RATINGS)[number];
@@ -12,16 +12,16 @@ export const RATING_SCORE: Record<Rating, number | null> = {
   Ausgezeichnet: 4,
   Gut: 3,
   Mittel: 2,
-  "Bitte anschauen": 1,
-  Pause: null,
+  Schlecht: 1,
+  Abbruch: 0,
 };
 
 export const RATING_COLORS: Record<Rating, string> = {
-  Ausgezeichnet: "var(--color-chart-2)",
-  Gut: "var(--color-chart-1)",
-  Mittel: "var(--color-chart-4)",
-  "Bitte anschauen": "var(--color-destructive)",
-  Pause: "var(--color-muted-foreground)",
+  Ausgezeichnet: "var(--color-lime-500)",
+  Gut: "var(--color-green-700)",
+  Mittel: "var(--color-yellow-500)",
+  Schlecht: "var(--color-orange-500)",
+  Abbruch: "var(--color-red-800)",
 };
 
 export function formatDuration(seconds: number): string {

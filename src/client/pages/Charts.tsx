@@ -284,8 +284,8 @@ interface WeeklyRow {
   Ausgezeichnet: number;
   Gut: number;
   Mittel: number;
-  "Bitte anschauen": number;
-  Pause: number;
+  Schlecht: number;
+  Abbruch: number;
 }
 
 interface StripPoint {
@@ -325,7 +325,7 @@ function buildData(sessions: SessionDTO[]) {
         rating,
         date: s.date,
       });
-      if (rating !== "Pause") {
+      if (rating !== "Abbruch") {
         sum += step.duration_seconds;
         count++;
       }
@@ -341,8 +341,8 @@ function buildData(sessions: SessionDTO[]) {
         Ausgezeichnet: 0,
         Gut: 0,
         Mittel: 0,
-        "Bitte anschauen": 0,
-        Pause: 0,
+        Schlecht: 0,
+        Abbruch: 0,
       };
       weekMap.set(week.key, row);
     }

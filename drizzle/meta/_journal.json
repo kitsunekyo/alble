@@ -8,6 +8,13 @@
       "when": 1777842767530,
       "tag": "0000_purple_the_executioner",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1777842767531,
+      "tag": "0001_update_ratings",
+      "breakpoints": true
     }
   ]
 }

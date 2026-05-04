@@ -184,6 +184,7 @@ export interface CsvRow {
   step: number;
   trennungszeit_seconds: number;
   bewertung: Rating;
+  note: string | null;
 }
 
 export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number } {
@@ -215,7 +216,7 @@ export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number
         .insert(sessions)
         .values({
           date: dayRows.find((r) => r.date)?.date ?? null,
-          notes: null,
+          notes: combineNotes(dayRows),
           global_day: day,
           created_at: Date.now(),
         })
@@ -238,4 +239,11 @@ export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number
   });
 
   return { sessions: sessionsCreated, steps: stepsCreated };
+}
+
+function combineNotes(rows: CsvRow[]): string | null {
+  const notes = rows
+    .filter((r) => r.note)
+    .map((r) => `Schritt ${r.step}: ${r.note}`);
+  return notes.length > 0 ? notes.join("\n") : null;
 }
