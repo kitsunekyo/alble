@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun --version)",
+      "Bash(mise use *)",
+      "Bash(bun add *)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "Bash(rm -f src/APITester.tsx src/logo.svg src/react.svg src/App.tsx src/frontend.tsx src/index.ts CLAUDE.md README.md)",
+      "Bash(mkdir -p src/client/pages src/client/components/ui src/client/lib src/client/hooks src/server/db src/server/api src/shared data drizzle)",
+      "Bash(bunx --bun shadcn@latest add button input label card select dialog form sonner separator scroll-area dropdown-menu --yes --overwrite)",
+      "Bash(bunx --bun shadcn@latest add chart alert-dialog tabs textarea badge skeleton --yes --overwrite)",
+      "Bash(bunx drizzle-kit *)",
+      "Bash(bunx tsc *)",
+      "Bash(PATH=\"$HOME/.local/share/mise/shims:$PATH\" bun *)",
+      "Bash(curl -sS -i http://127.0.0.1:3000/api/health)",
+      "Bash(curl -sS -i http://127.0.0.1:3000/api/sessions/today)",
+      "Bash(curl -sS -X POST http://127.0.0.1:3000/api/import/csv -F \"file=@/mnt/c/Users/alexa/Documents/allein-bleib-training/output/processed.csv\")",
+      "Bash(curl -sS http://127.0.0.1:3000/api/health)",
+      "Bash(awk *)",
+      "Bash(curl -sS -X POST http://127.0.0.1:3000/api/wipe -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('sessions:', d['sessions'], 'steps:', d['steps'], 'errors:', len\\(d['parseErrors']\\)\\)\")",
+      "Bash(curl -sS http://127.0.0.1:3000/api/sessions)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('total sessions:', len\\(d\\), 'total steps:', sum\\(len\\(s['steps']\\) for s in d\\), 'first:', d[0]['global_day'], '...last:', d[-1]['global_day']\\)\")",
+      "Bash(curl -sS http://127.0.0.1:3000/)",
+      "Bash(curl -sS http://127.0.0.1:3000/api/export/csv)",
+      "Bash(curl -sS -o /dev/null -w \"JS: %{http_code} size=%{size_download}\\\\n\" http://127.0.0.1:3000/_bun/client/index-0200000071bf8c65.js)",
+      "Bash(curl -sS -o /dev/null -w \"CSS: %{http_code} size=%{size_download}\\\\n\" http://127.0.0.1:3000/_bun/asset/3581ea4cd9c28873.css)",
+      "Bash(curl -sS http://127.0.0.1:3000/ -o /tmp/index.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -sS \"http://127.0.0.1:3000/_bun/client/index-0200000029612b0f.js\" -o /dev/null -w \"%{http_code} size=%{size_download}\\\\n\")",
+      "Bash(ip -4 -o addr show)"
+    ]
+  }
+}
