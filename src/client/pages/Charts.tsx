@@ -173,6 +173,7 @@ export function Charts() {
               <XAxis
                 type="number"
                 dataKey="x"
+                domain={["dataMin", "dataMax"]}
                 tickFormatter={(v) => formatTimestampDateShort(Number(v))}
                 tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
                 label={{

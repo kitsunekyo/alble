@@ -214,7 +214,6 @@ export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number
       const created = db
         .insert(sessions)
         .values({
-          date: null,
           date: dayRows.find((r) => r.date)?.date ?? null,
           notes: null,
           global_day: day,

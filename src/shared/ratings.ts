@@ -24,14 +24,6 @@ export const RATING_COLORS: Record<Rating, string> = {
   Pause: "var(--color-muted-foreground)",
 };
 
-export function weekFromGlobalDay(globalDay: number): number {
-  return Math.ceil(globalDay / 7);
-}
-
-export function dayInWeekFromGlobalDay(globalDay: number): number {
-  return ((globalDay - 1) % 7) + 1;
-}
-
 export function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;

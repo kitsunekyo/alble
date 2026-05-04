@@ -27,6 +27,7 @@ export function parseCsv(text: string): CsvParseResult {
     }
   }
   if (errors.length > 0) return { rows, errors };
+  const dateIndex = header.indexOf("date");
 
   for (let i = 1; i < lines.length; i++) {
     const lineNo = i + 1;
@@ -38,7 +39,7 @@ export function parseCsv(text: string): CsvParseResult {
     const durationRaw = get("trennungszeit_seconds");
     const ratingRaw = get("bewertung");
     const duration = Number.parseInt(durationRaw, 10);
-    const date = header.includes("date") ? get("date") : "";
+    const date = dateIndex === -1 ? "" : (cols[dateIndex]?.trim() ?? "");
 
     // Skip rows missing duration or rating (pause days, incomplete records).
     if (durationRaw === "" || ratingRaw === "") continue;
