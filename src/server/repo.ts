@@ -1,7 +1,7 @@
 import { db } from "./db/client";
 import { sessions, steps, type SessionRow, type StepRow } from "./db/schema";
 import { and, asc, desc, eq, isNotNull, max, sql } from "drizzle-orm";
-import type { Rating } from "@/shared/ratings";
+import type { Rating } from "../shared/ratings";
 import type {
   CreateSessionInput,
   UpdateSessionInput,
@@ -9,7 +9,7 @@ import type {
   UpdateStepInput,
   SessionDTO,
   StepDTO,
-} from "@/shared/schemas";
+} from "../shared/schemas";
 
 function toStepDTO(row: StepRow): StepDTO {
   return {

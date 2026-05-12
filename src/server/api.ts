@@ -4,7 +4,7 @@ import {
   updateSessionSchema,
   createStepSchema,
   updateStepSchema,
-} from "@/shared/schemas";
+} from "../shared/schemas";
 import * as repo from "./repo";
 import { parseCsv, rowsToCsv } from "./csv";
 import { db } from "./db/client";

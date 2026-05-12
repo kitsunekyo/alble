@@ -1,5 +1,5 @@
-import { RATINGS, type Rating } from "@/shared/ratings";
-import { isIsoDateString } from "@/shared/dates";
+import { RATINGS, type Rating } from "../shared/ratings";
+import { isIsoDateString } from "../shared/dates";
 import type { CsvRow } from "./repo";
 
 export interface CsvParseResult {
