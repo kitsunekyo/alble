@@ -1,4 +1,7 @@
-import { NavLink, Outlet } from "react-router";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CalendarClock, History, BarChart3, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/client/lib/utils";
 
@@ -9,7 +12,9 @@ const navItems = [
   { to: "/settings", label: "Einstellungen", icon: SettingsIcon },
 ];
 
-export function Layout() {
+export function Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
   return (
     <div className="min-h-dvh flex flex-col bg-background">
       <header className="hidden md:flex items-center justify-between border-b px-6 py-3">
@@ -19,27 +24,24 @@ export function Layout() {
         </div>
         <nav className="flex gap-1">
           {navItems.map((item) => (
-            <NavLink
+            <Link
               key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                )
-              }
+              href={item.to}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                isActivePath(pathname, item.to, item.end)
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
+              )}
             >
               {item.label}
-            </NavLink>
+            </Link>
           ))}
         </nav>
       </header>
 
       <main className="flex-1 pb-20 md:pb-0">
-        <Outlet />
+        {children}
       </main>
 
       <nav
@@ -50,24 +52,26 @@ export function Layout() {
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <NavLink
+              <Link
                 key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    "flex flex-col items-center justify-center gap-1 py-2.5 text-xs transition-colors",
-                    isActive ? "text-foreground" : "text-muted-foreground",
-                  )
-                }
+                href={item.to}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 py-2.5 text-xs transition-colors",
+                  isActivePath(pathname, item.to, item.end) ? "text-foreground" : "text-muted-foreground",
+                )}
               >
                 <Icon className="size-5" />
                 <span>{item.label}</span>
-              </NavLink>
+              </Link>
             );
           })}
         </div>
       </nav>
     </div>
   );
+}
+
+function isActivePath(pathname: string, href: string, exact = false) {
+  if (exact) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
 }

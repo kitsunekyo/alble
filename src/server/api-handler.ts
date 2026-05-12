@@ -1,4 +1,12 @@
-import { apiRoutes } from "../src/server/api";
+import { apiRoutes } from "./api";
+import { runMigrations } from "./db/client";
+
+let migrationsPromise: Promise<void> | null = null;
+
+function ensureMigrations() {
+  migrationsPromise ??= runMigrations();
+  return migrationsPromise;
+}
 
 function matchRoute(pattern: string, path: string): Record<string, string> | null {
   const pat = pattern.split("/");
@@ -27,8 +35,10 @@ function requestWithParams(request: Request, params: Record<string, string>): Re
   });
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleApiRequest(request: Request): Promise<Response> {
   try {
+    await ensureMigrations();
+
     const url = new URL(request.url, "http://localhost");
     const path = url.pathname;
     const method = request.method;
@@ -37,16 +47,12 @@ export default async function handler(request: Request): Promise<Response> {
       const params = matchRoute(pattern, path);
       if (!params) continue;
 
-      const routeHandler = (handlers as Record<string, Function>)[method];
+      const routeHandler = (handlers as Record<string, (request?: Request) => Promise<Response>>)[method];
       if (!routeHandler) {
         return new Response(JSON.stringify({ error: "Method not allowed" }), {
           status: 405,
           headers: { "content-type": "application/json" },
         });
-      }
-
-      if (Object.keys(params).length === 0) {
-        return await routeHandler();
       }
 
       return await routeHandler(requestWithParams(request, params));

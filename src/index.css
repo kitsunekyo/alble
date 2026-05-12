@@ -1,5 +1,9 @@
 @import "tailwindcss";
-@import "tw-animate-css";
+@source "../app";
+@source "./client";
+@source "./server";
+@source "./shared";
+@import "../node_modules/tw-animate-css/dist/tw-animate.css";
 
 @custom-variant dark (&:is(.dark *));
 

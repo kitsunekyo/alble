@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, useState } from "react";
 import { Loader2, Upload, Download, Trash2 } from "lucide-react";
 import { useImportCsv, useWipe, useSessions } from "@/client/hooks/use-sessions";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import {
@@ -58,7 +60,7 @@ export function Charts() {
 
       <Card className="p-4">
         <h2 className="text-sm font-medium mb-3">Trennungszeit über die Zeit</h2>
-        <div className="h-72">
+        <div className="h-72 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -123,7 +125,7 @@ export function Charts() {
 
       <Card className="p-4">
         <h2 className="text-sm font-medium mb-3">Bewertungsverteilung pro Woche</h2>
-        <div className="h-72">
+        <div className="h-72 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data.weekly}
@@ -166,7 +168,7 @@ export function Charts() {
 
       <Card className="p-4">
         <h2 className="text-sm font-medium mb-3">Durchschnittliche Trennungszeit pro Tag</h2>
-        <div className="h-72">
+        <div className="h-72 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data.daily} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -212,7 +214,7 @@ export function Charts() {
 
       <Card className="p-4">
         <h2 className="text-sm font-medium mb-3">Trennungszeit-Verteilung je Bewertung</h2>
-        <div className="h-80">
+        <div className="h-80 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />

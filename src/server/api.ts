@@ -11,6 +11,8 @@ import { db } from "./db/client";
 import { sessions, steps } from "./db/schema";
 import { asc } from "drizzle-orm";
 
+type RouteRequest = Request & { params: Record<string, string> };
+
 function json(data: unknown, init?: ResponseInit): Response {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -61,14 +63,14 @@ export const apiRoutes = {
   },
 
   "/api/sessions/:id": {
-    GET: async (req: Bun.BunRequest<"/api/sessions/:id">) => {
+    GET: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
       if (id === null) return badRequest("Invalid id");
       const s = await repo.getSession(id);
       if (!s) return notFound();
       return json(s);
     },
-    PATCH: async (req: Bun.BunRequest<"/api/sessions/:id">) => {
+    PATCH: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
       if (id === null) return badRequest("Invalid id");
       const r = await readJson(req, updateSessionSchema);
@@ -77,7 +79,7 @@ export const apiRoutes = {
       if (!updated) return notFound();
       return json(updated);
     },
-    DELETE: async (req: Bun.BunRequest<"/api/sessions/:id">) => {
+    DELETE: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
       if (id === null) return badRequest("Invalid id");
       const ok = await repo.deleteSession(id);
@@ -87,7 +89,7 @@ export const apiRoutes = {
   },
 
   "/api/sessions/:id/steps": {
-    POST: async (req: Bun.BunRequest<"/api/sessions/:id/steps">) => {
+    POST: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
       if (id === null) return badRequest("Invalid id");
       const r = await readJson(req, createStepSchema);
@@ -99,7 +101,7 @@ export const apiRoutes = {
   },
 
   "/api/steps/:id": {
-    PATCH: async (req: Bun.BunRequest<"/api/steps/:id">) => {
+    PATCH: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
       if (id === null) return badRequest("Invalid id");
       const r = await readJson(req, updateStepSchema);
@@ -108,7 +110,7 @@ export const apiRoutes = {
       if (!updated) return notFound();
       return json(updated);
     },
-    DELETE: async (req: Bun.BunRequest<"/api/steps/:id">) => {
+    DELETE: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
       if (id === null) return badRequest("Invalid id");
       const ok = await repo.deleteStep(id);

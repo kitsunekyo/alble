@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Loader2, Trash2, Pencil, Check, X } from "lucide-react";
 import { useTodaySession, useAddStep, useDeleteStep, useUpdateStep } from "@/client/hooks/use-sessions";

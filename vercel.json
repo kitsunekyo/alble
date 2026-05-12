@@ -1,10 +1,4 @@
 {
-	"bunVersion": "1.x",
-	"buildCommand": "bun run build",
-	"outputDirectory": "dist",
-	"installCommand": "bun install",
-	"framework": null,
-	"rewrites": [
-		{ "source": "/((?!api/).*)", "destination": "/index.html" }
-	]
+	"installCommand": "pnpm install --frozen-lockfile",
+	"framework": "nextjs"
 }
