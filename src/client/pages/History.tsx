@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Loader2, Trash2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import {
   useSessions,
+  useAddStep,
+  useSessionByDate,
   useDeleteSession,
   useUpdateSession,
   useDeleteStep,
@@ -107,6 +109,9 @@ export function History() {
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 space-y-6">
       <h1 className="text-2xl font-semibold">Verlauf</h1>
+
+      <DateEntryForm />
+
       {grouped.map(({ key, label, items }) => (
         <section key={key} className="space-y-2">
           <h2 className="text-sm font-medium text-muted-foreground">{label}</h2>
@@ -116,6 +121,108 @@ export function History() {
         </section>
       ))}
     </div>
+  );
+}
+
+function DateEntryForm() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+  const session = useSessionByDate(selectedDate);
+  const addStep = useAddStep();
+
+  const [duration, setDuration] = useState<DurationParts>({
+    hours: "",
+    minutes: "",
+    seconds: "",
+  });
+  const [rating, setRating] = useState<Rating | null>(null);
+  const [notes, setNotes] = useState("");
+
+  function submit() {
+    if (!session.data) return;
+    const dur = durationPartsToSeconds(duration);
+    if (dur === null || dur > 86_400) {
+      toast.error("Dauer ungültig");
+      return;
+    }
+    if (!rating) {
+      toast.error("Bewertung wählen");
+      return;
+    }
+    const trimmedNotes = notes.trim();
+    addStep.mutate(
+      {
+        sessionId: session.data.id,
+        input: {
+          duration_seconds: dur,
+          rating,
+          notes: trimmedNotes === "" ? null : trimmedNotes,
+        },
+      },
+      {
+        onSuccess: () => {
+          setDuration({ hours: "", minutes: "", seconds: "" });
+          setRating(null);
+          setNotes("");
+        },
+        onError: (e) => toast.error(e.message),
+      },
+    );
+  }
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <label className="text-sm text-muted-foreground">Datum</label>
+        <Input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="w-auto"
+        />
+        {session.data && (
+          <span className="text-sm text-muted-foreground ml-auto">
+            {formatWeekday(session.data.date ?? selectedDate)}, {formatDate(session.data.date ?? selectedDate)} ·{" "}
+            Trainingstag {session.data.global_day} · {session.data.steps.length} Einheit
+            {session.data.steps.length === 1 ? "" : "en"}
+          </span>
+        )}
+      </div>
+
+      {session.isLoading ? (
+        <div className="flex items-center justify-center py-8 text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
+      ) : session.data ? (
+        <>
+          {session.data.steps.length > 0 && (
+            <div className="space-y-1.5 mb-4">
+              {session.data.steps.map((step) => (
+                <StepRow key={step.id} step={step} />
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <DurationInput value={duration} onChange={setDuration} onEnter={submit} />
+              </div>
+              <Button onClick={submit} disabled={addStep.isPending} className="min-w-20">
+                {addStep.isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
+              </Button>
+            </div>
+            <RatingPicker value={rating} onChange={setRating} />
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optionale Notiz"
+              className="min-h-20"
+            />
+          </div>
+        </>
+      ) : null}
+    </Card>
   );
 }
 

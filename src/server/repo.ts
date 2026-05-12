@@ -81,6 +81,12 @@ export async function getOrCreateTodaySession(): Promise<SessionDTO> {
   return createSession({ date: today });
 }
 
+export async function getOrCreateSessionByDate(date: string): Promise<SessionDTO> {
+  const existing = await db.select().from(sessions).where(eq(sessions.date, date)).get();
+  if (existing) return getSession(existing.id) as Promise<SessionDTO>;
+  return createSession({ date });
+}
+
 export async function createSession(input: CreateSessionInput): Promise<SessionDTO> {
   const date = input.date ?? null;
   const notes = input.notes ?? null;

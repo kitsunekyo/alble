@@ -21,6 +21,13 @@ export function useTodaySession() {
   return useQuery({ queryKey: KEYS.today, queryFn: api.todaySession });
 }
 
+export function useSessionByDate(date: string) {
+  return useQuery({
+    queryKey: ["sessions", "by-date", date],
+    queryFn: () => api.sessionByDate(date),
+  });
+}
+
 function useInvalidateAll() {
   const qc = useQueryClient();
   return () => {

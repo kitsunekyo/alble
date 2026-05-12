@@ -62,6 +62,14 @@ export const apiRoutes = {
     GET: async () => json(await repo.getOrCreateTodaySession()),
   },
 
+  "/api/sessions/by-date/:date": {
+    GET: async (req: RouteRequest) => {
+      const date = req.params.date;
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return badRequest("Invalid date format, expected YYYY-MM-DD");
+      return json(await repo.getOrCreateSessionByDate(date));
+    },
+  },
+
   "/api/sessions/:id": {
     GET: async (req: RouteRequest) => {
       const id = parseId(req.params.id);
