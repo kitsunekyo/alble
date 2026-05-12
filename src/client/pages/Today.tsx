@@ -25,7 +25,23 @@ export function Today() {
   const [rating, setRating] = useState<Rating | null>(null);
   const [notes, setNotes] = useState("");
 
-  if (session.isLoading || !session.data) {
+  if (session.isError) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 pt-8 text-center text-muted-foreground">
+        Fehler beim Laden. Stelle sicher, dass die Umgebungsvariablen <code>TURSO_DATABASE_URL</code> und <code>TURSO_AUTH_TOKEN</code> gesetzt sind.
+      </div>
+    );
+  }
+
+  if (session.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        <Loader2 className="size-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!session.data) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground">
         <Loader2 className="size-5 animate-spin" />

@@ -3,5 +3,8 @@
 	"buildCommand": "bun run build",
 	"outputDirectory": "dist",
 	"installCommand": "bun install",
-	"framework": null
+	"framework": null,
+	"rewrites": [
+		{ "source": "/((?!api/).*)", "destination": "/index.html" }
+	]
 }
