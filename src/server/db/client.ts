@@ -1,6 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
+import { join } from "node:path";
 import * as schema from "./schema";
 
 const turso = createClient({
@@ -11,5 +12,5 @@ const turso = createClient({
 export const db = drizzle(turso, { schema });
 
 export async function runMigrations() {
-  await migrate(db, { migrationsFolder: "./drizzle" });
+  await migrate(db, { migrationsFolder: join(process.cwd(), "drizzle") });
 }
