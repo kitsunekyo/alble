@@ -29,7 +29,7 @@ function requestWithParams(request: Request, params: Record<string, string>): Re
 
 export default async function handler(request: Request): Promise<Response> {
   try {
-    const url = new URL(request.url);
+    const url = new URL(request.url, "http://localhost");
     const path = url.pathname;
     const method = request.method;
 
