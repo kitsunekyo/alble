@@ -36,6 +36,7 @@ export function parseCsv(text: string): CsvParseResult {
   }
   if (errors.length > 0) return { rows, errors };
   const dateIndex = header.indexOf("date");
+  const noteIndex = header.indexOf("note");
 
   for (let i = 1; i < lines.length; i++) {
     const lineNo = i + 1;
@@ -48,6 +49,7 @@ export function parseCsv(text: string): CsvParseResult {
     const ratingRaw = get("bewertung");
     const duration = Number.parseInt(durationRaw, 10);
     const date = dateIndex === -1 ? "" : (cols[dateIndex]?.trim() ?? "");
+    const note = noteIndex === -1 ? "" : (cols[noteIndex]?.trim() ?? "");
 
     // Skip rows missing duration or rating (pause days, incomplete records).
     if (durationRaw === "" || ratingRaw === "") continue;
@@ -80,7 +82,7 @@ export function parseCsv(text: string): CsvParseResult {
       step,
       trennungszeit_seconds: duration,
       bewertung: normalized.rating,
-      note: normalized.note ?? null,
+      note: note === "" ? (normalized.note ?? null) : note,
     });
   }
 
@@ -93,8 +95,31 @@ function normalizeRating(value: string): { rating: Rating; note?: string } | nul
 }
 
 function splitCsvLine(line: string): string[] {
-  // Minimal CSV: no quoted fields with commas in this dataset.
-  return line.split(",");
+  const cols: string[] = [];
+  let current = "";
+  let quoted = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (quoted && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (char === "," && !quoted) {
+      cols.push(current);
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  cols.push(current);
+  return cols;
 }
 
 export function rowsToCsv(
@@ -104,11 +129,26 @@ export function rowsToCsv(
     step_number: number;
     duration_seconds: number;
     rating: string;
+    notes: string | null;
   }[],
 ): string {
-  const header = "date,global_day,step,trennungszeit_seconds,bewertung";
+  const header = "date,global_day,step,trennungszeit_seconds,bewertung,note";
   const body = rows
-    .map((r) => `${r.date ?? ""},${r.global_day},${r.step_number},${r.duration_seconds},${r.rating}`)
+    .map((r) =>
+      [
+        r.date ?? "",
+        r.global_day,
+        r.step_number,
+        r.duration_seconds,
+        escapeCsvValue(r.rating),
+        escapeCsvValue(r.notes ?? ""),
+      ].join(","),
+    )
     .join("\n");
   return header + "\n" + body + "\n";
+}
+
+function escapeCsvValue(value: string): string {
+  const singleLine = value.replaceAll(/\r\n?|\n/g, " ");
+  return /[",]/.test(singleLine) ? `"${singleLine.replaceAll('"', '""')}"` : singleLine;
 }

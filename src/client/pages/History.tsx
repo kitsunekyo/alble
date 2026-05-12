@@ -10,6 +10,7 @@ import {
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Input } from "@/client/components/ui/input";
+import { Textarea } from "@/client/components/ui/textarea";
 import { Badge } from "@/client/components/ui/badge";
 import {
   DurationInput,
@@ -231,33 +232,37 @@ function StepRow({ step }: { step: StepDTO }) {
   const deleteStep = useDeleteStep();
   const [dur, setDur] = useState<DurationParts>(secondsToDurationParts(step.duration_seconds));
   const [rating, setRating] = useState<Rating>(step.rating);
+  const [notes, setNotes] = useState(step.notes ?? "");
 
   if (!editing) {
     return (
-      <div
-        className={cn(
-          "flex items-center gap-3 px-2 py-1.5 rounded-md text-sm",
-          "hover:bg-muted/40",
-        )}
-      >
-        <span className="text-muted-foreground w-6 text-center">{step.step_number}</span>
-        <span className="flex-1 tabular-nums">
-          {formatDuration(step.duration_seconds)}
-        </span>
-        <span className="text-muted-foreground">{step.rating}</span>
-        <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
-          <Pencil className="size-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Löschen"
-          onClick={() =>
-            deleteStep.mutate(step.id, { onError: (e) => toast.error(e.message) })
-          }
+      <div>
+        <div
+          className={cn(
+            "flex items-center gap-3 px-2 py-1.5 rounded-md text-sm",
+            "hover:bg-muted/40",
+          )}
         >
-          <Trash2 className="size-3.5 text-destructive" />
-        </Button>
+          <span className="text-muted-foreground w-6 text-center">{step.step_number}</span>
+          <span className="flex-1 tabular-nums">
+            {formatDuration(step.duration_seconds)}
+          </span>
+          <span className="text-muted-foreground">{step.rating}</span>
+          <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
+            <Pencil className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Löschen"
+            onClick={() =>
+              deleteStep.mutate(step.id, { onError: (e) => toast.error(e.message) })
+            }
+          >
+            <Trash2 className="size-3.5 text-destructive" />
+          </Button>
+        </div>
+        {step.notes && <p className="ml-10 text-sm whitespace-pre-wrap">{step.notes}</p>}
       </div>
     );
   }
@@ -276,7 +281,14 @@ function StepRow({ step }: { step: StepDTO }) {
               return;
             }
             updateStep.mutate(
-              { id: step.id, input: { duration_seconds: v, rating } },
+              {
+                id: step.id,
+                input: {
+                  duration_seconds: v,
+                  rating,
+                  notes: notes.trim() === "" ? null : notes.trim(),
+                },
+              },
               {
                 onSuccess: () => setEditing(false),
                 onError: (e) => toast.error(e.message),
@@ -291,6 +303,12 @@ function StepRow({ step }: { step: StepDTO }) {
         </Button>
       </div>
       <RatingPicker value={rating} onChange={setRating} />
+      <Textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Optionale Notiz"
+        className="min-h-20"
+      />
     </div>
   );
 }
@@ -314,8 +332,8 @@ function SessionMetaEditor({
       </div>
       <div className="flex gap-2 items-start">
         <label className="text-sm w-16 mt-2">Notizen</label>
-        <textarea
-          className="flex-1 min-h-16 rounded-md border bg-background px-3 py-2 text-sm"
+        <Textarea
+          className="flex-1 min-h-16"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />

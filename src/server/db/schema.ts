@@ -18,6 +18,7 @@ export const steps = sqliteTable(
     step_number: integer("step_number").notNull(),
     duration_seconds: integer("duration_seconds").notNull(),
     rating: text("rating").notNull(),
+    notes: text("notes"),
   },
   (t) => [uniqueIndex("steps_session_step_unique").on(t.session_id, t.step_number)],
 );

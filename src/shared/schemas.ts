@@ -18,6 +18,7 @@ export type UpdateSessionInput = z.infer<typeof updateSessionSchema>;
 export const createStepSchema = z.object({
   duration_seconds: z.number().int().min(0).max(86_400),
   rating: ratingSchema,
+  notes: z.string().max(2000).nullable().optional(),
 });
 export type CreateStepInput = z.infer<typeof createStepSchema>;
 
@@ -30,6 +31,7 @@ export interface StepDTO {
   step_number: number;
   duration_seconds: number;
   rating: (typeof RATINGS)[number];
+  notes: string | null;
 }
 
 export interface SessionDTO {

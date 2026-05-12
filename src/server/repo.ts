@@ -18,6 +18,7 @@ function toStepDTO(row: StepRow): StepDTO {
     step_number: row.step_number,
     duration_seconds: row.duration_seconds,
     rating: row.rating as Rating,
+    notes: row.notes,
   };
 }
 
@@ -128,6 +129,7 @@ export function addStep(sessionId: number, input: CreateStepInput): StepDTO | nu
       step_number: next,
       duration_seconds: input.duration_seconds,
       rating: input.rating,
+      notes: input.notes ?? null,
     })
     .returning()
     .get();
@@ -138,6 +140,7 @@ export function updateStep(stepId: number, input: UpdateStepInput): StepDTO | nu
   const patch: Partial<StepRow> = {};
   if (input.duration_seconds !== undefined) patch.duration_seconds = input.duration_seconds;
   if (input.rating !== undefined) patch.rating = input.rating;
+  if ("notes" in input) patch.notes = input.notes ?? null;
   if (Object.keys(patch).length === 0) {
     const cur = db.select().from(steps).where(eq(steps.id, stepId)).get();
     return cur ? toStepDTO(cur) : null;
@@ -216,7 +219,7 @@ export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number
         .insert(sessions)
         .values({
           date: dayRows.find((r) => r.date)?.date ?? null,
-          notes: combineNotes(dayRows),
+          notes: null,
           global_day: day,
           created_at: Date.now(),
         })
@@ -231,6 +234,7 @@ export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number
             step_number: r.step,
             duration_seconds: r.trennungszeit_seconds,
             rating: r.bewertung,
+            notes: r.note,
           })
           .run();
         stepsCreated++;
@@ -239,11 +243,4 @@ export function importCsvRows(rows: CsvRow[]): { sessions: number; steps: number
   });
 
   return { sessions: sessionsCreated, steps: stepsCreated };
-}
-
-function combineNotes(rows: CsvRow[]): string | null {
-  const notes = rows
-    .filter((r) => r.note)
-    .map((r) => `Schritt ${r.step}: ${r.note}`);
-  return notes.length > 0 ? notes.join("\n") : null;
 }

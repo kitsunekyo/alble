@@ -3,6 +3,7 @@ import { Loader2, Trash2, Pencil, Check, X } from "lucide-react";
 import { useTodaySession, useAddStep, useDeleteStep, useUpdateStep } from "@/client/hooks/use-sessions";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { Textarea } from "@/client/components/ui/textarea";
 import { RatingPicker } from "@/client/components/RatingPicker";
 import {
   DurationInput,
@@ -22,6 +23,7 @@ export function Today() {
 
   const [duration, setDuration] = useState<DurationParts>({ hours: "", minutes: "", seconds: "" });
   const [rating, setRating] = useState<Rating | null>(null);
+  const [notes, setNotes] = useState("");
 
   if (session.isLoading || !session.data) {
     return (
@@ -45,12 +47,17 @@ export function Today() {
       toast.error("Bewertung wählen");
       return;
     }
+    const trimmedNotes = notes.trim();
     addStep.mutate(
-      { sessionId: s.id, input: { duration_seconds: dur, rating } },
+      {
+        sessionId: s.id,
+        input: { duration_seconds: dur, rating, notes: trimmedNotes === "" ? null : trimmedNotes },
+      },
       {
         onSuccess: () => {
           setDuration({ hours: "", minutes: "", seconds: "" });
           setRating(null);
+          setNotes("");
         },
         onError: (e) => toast.error(e.message),
       },
@@ -98,6 +105,12 @@ export function Today() {
             </Button>
           </div>
           <RatingPicker value={rating} onChange={setRating} />
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Optionale Notiz"
+            className="min-h-20"
+          />
         </div>
       </Card>
     </div>
@@ -111,6 +124,7 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
     secondsToDurationParts(step.duration_seconds),
   );
   const [draftRating, setDraftRating] = useState<Rating>(step.rating);
+  const [draftNotes, setDraftNotes] = useState(step.notes ?? "");
 
   if (!editing) {
     return (
@@ -121,6 +135,7 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
             {formatDuration(step.duration_seconds)}
           </div>
           <div className="text-sm text-muted-foreground">{step.rating}</div>
+          {step.notes && <div className="text-sm whitespace-pre-wrap mt-1">{step.notes}</div>}
         </div>
         <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
           <Pencil className="size-4" />
@@ -139,7 +154,14 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
       return;
     }
     updateStep.mutate(
-      { id: step.id, input: { duration_seconds: dur, rating: draftRating } },
+      {
+        id: step.id,
+        input: {
+          duration_seconds: dur,
+          rating: draftRating,
+          notes: draftNotes.trim() === "" ? null : draftNotes.trim(),
+        },
+      },
       {
         onSuccess: () => setEditing(false),
         onError: (e) => toast.error(e.message),
@@ -165,6 +187,12 @@ function StepRow({ step, onDelete }: { step: StepDTO; onDelete: () => void }) {
         </Button>
       </div>
       <RatingPicker value={draftRating} onChange={setDraftRating} />
+      <Textarea
+        value={draftNotes}
+        onChange={(e) => setDraftNotes(e.target.value)}
+        placeholder="Optionale Notiz"
+        className="min-h-20"
+      />
     </Card>
   );
 }

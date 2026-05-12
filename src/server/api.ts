@@ -149,6 +149,7 @@ export const apiRoutes = {
         step_number: s.step_number,
         duration_seconds: s.duration_seconds,
         rating: s.rating,
+        notes: s.notes,
       }));
       const csv = rowsToCsv(rows);
       return new Response(csv, {
