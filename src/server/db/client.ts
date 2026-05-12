@@ -10,6 +10,6 @@ const turso = createClient({
 
 export const db = drizzle(turso, { schema });
 
-export function runMigrations() {
-  migrate(db, { migrationsFolder: "./drizzle" });
+export async function runMigrations() {
+  await migrate(db, { migrationsFolder: "./drizzle" });
 }

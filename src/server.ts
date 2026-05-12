@@ -3,7 +3,7 @@ import index from "./index.html";
 import { runMigrations } from "./server/db/client";
 import { apiRoutes } from "./server/api";
 
-runMigrations();
+await runMigrations();
 
 const port = Number(process.env.PORT ?? 3000);
 
