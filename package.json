@@ -10,7 +10,8 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
