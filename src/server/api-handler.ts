@@ -1,11 +1,16 @@
 import { apiRoutes } from "./api";
 import { runMigrations } from "./db/client";
+import { requireAuth } from "./auth";
 
 let migrationsPromise: Promise<void> | null = null;
 
 function ensureMigrations() {
   migrationsPromise ??= runMigrations();
   return migrationsPromise;
+}
+
+function isAuthRoute(path: string): boolean {
+  return path.startsWith("/api/auth/");
 }
 
 function matchRoute(pattern: string, path: string): Record<string, string> | null {
@@ -42,6 +47,11 @@ export async function handleApiRequest(request: Request): Promise<Response> {
     const url = new URL(request.url, "http://localhost");
     const path = url.pathname;
     const method = request.method;
+
+    if (!isAuthRoute(path)) {
+      const authRes = await requireAuth(request);
+      if (authRes) return authRes;
+    }
 
     for (const [pattern, handlers] of Object.entries(apiRoutes)) {
       const params = matchRoute(pattern, path);

@@ -10,6 +10,7 @@ import { parseCsv, rowsToCsv } from "./csv";
 import { db } from "./db/client";
 import { sessions, steps } from "./db/schema";
 import { asc } from "drizzle-orm";
+import { login, logout, validateSession, setSessionCookie, clearSessionCookie, getPasswordHash, setPassword, changePassword, requireAuth } from "./auth";
 
 type RouteRequest = Request & { params: Record<string, string> };
 
@@ -181,4 +182,81 @@ export const apiRoutes = {
   "/api/health": {
     GET: async () => json({ ok: true, sessions: await repo.countSessions() }),
   },
+
+  "/api/auth/login": {
+    POST: async (req: Request) => {
+      const body = await req.json().catch(() => null);
+      if (!body || typeof body.password !== "string") {
+        return badRequest("Password required");
+      }
+      const existingHash = await getPasswordHash();
+      if (!existingHash) {
+        await setPassword(body.password);
+        const token = await login(body.password);
+        if (!token) return json({ error: "Login failed" }, { status: 500 });
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "content-type": "application/json", "set-cookie": setSessionCookie(token) },
+        });
+      }
+      const token = await login(body.password);
+      if (!token) {
+        return json({ error: "Invalid password" }, { status: 401 });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json", "set-cookie": setSessionCookie(token) },
+      });
+    },
+  },
+
+  "/api/auth/logout": {
+    POST: async (req: Request) => {
+      const cookieHeader = req.headers.get("cookie") ?? "";
+      const token = parseCookieSimple(cookieHeader, "session_token");
+      if (token) await logout(token);
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json", "set-cookie": clearSessionCookie() },
+      });
+    },
+  },
+
+  "/api/auth/check": {
+    GET: async (req: Request) => {
+      const cookieHeader = req.headers.get("cookie") ?? "";
+      const token = parseCookieSimple(cookieHeader, "session_token");
+      const valid = await validateSession(token);
+      if (!valid) return json({ authenticated: false }, { status: 401 });
+      return json({ authenticated: true });
+    },
+  },
+
+  "/api/auth/change-password": {
+    POST: async (req: Request) => {
+      const body = await req.json().catch(() => null);
+      if (!body || typeof body.current_password !== "string" || typeof body.new_password !== "string") {
+        return badRequest("current_password and new_password required");
+      }
+      if (body.new_password.length < 1) {
+        return badRequest("New password cannot be empty");
+      }
+      const ok = await changePassword(body.current_password, body.new_password);
+      if (!ok) {
+        return json({ error: "Current password is incorrect" }, { status: 403 });
+      }
+      return json({ ok: true });
+    },
+  },
 } as const;
+
+function parseCookieSimple(cookie: string, name: string): string | null {
+  for (const part of cookie.split(";")) {
+    const idx = part.indexOf("=");
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    const val = part.slice(idx + 1).trim();
+    if (key === name && val) return val;
+  }
+  return null;
+}

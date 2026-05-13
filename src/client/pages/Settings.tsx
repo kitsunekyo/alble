@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, Upload, Download, Trash2 } from "lucide-react";
+import { Loader2, Upload, Download, Trash2, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useImportCsv, useWipe, useSessions } from "@/client/hooks/use-sessions";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { Input } from "@/client/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +25,11 @@ export function Settings() {
   const importCsv = useImportCsv();
   const wipe = useWipe();
   const [lastImport, setLastImport] = useState<string | null>(null);
+
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
 
   function onFile(file: File | null) {
     if (!file) return;
@@ -84,6 +90,71 @@ export function Settings() {
             <Download className="size-4 mr-2" /> CSV herunterladen
           </a>
         </Button>
+      </Card>
+
+      <Card className="p-4 space-y-3">
+        <div>
+          <h2 className="font-medium">Passwort ändern</h2>
+          <p className="text-sm text-muted-foreground">
+            Lege ein neues Passwort für den Zugang fest.
+          </p>
+        </div>
+        <div className="space-y-3">
+          <Input
+            type={showPw ? "text" : "password"}
+            placeholder="Aktuelles Passwort"
+            value={currentPw}
+            onChange={(e) => setCurrentPw(e.target.value)}
+          />
+          <div className="relative">
+            <Input
+              type={showPw ? "text" : "password"}
+              placeholder="Neues Passwort"
+              value={newPw}
+              onChange={(e) => setNewPw(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw(!showPw)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              tabIndex={-1}
+            >
+              {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
+          <Button
+            onClick={async () => {
+              if (!currentPw || !newPw) {
+                toast.error("Beide Felder ausfüllen");
+                return;
+              }
+              setChangingPw(true);
+              try {
+                const res = await fetch("/api/auth/change-password", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({ current_password: currentPw, new_password: newPw }),
+                });
+                if (!res.ok) {
+                  const data = await res.json().catch(() => ({}));
+                  toast.error(data.error ?? "Fehler");
+                  return;
+                }
+                toast.success("Passwort geändert");
+                setCurrentPw("");
+                setNewPw("");
+              } catch {
+                toast.error("Verbindungsfehler");
+              } finally {
+                setChangingPw(false);
+              }
+            }}
+            disabled={changingPw}
+          >
+            {changingPw ? <Loader2 className="size-4 animate-spin mr-2" /> : <KeyRound className="size-4 mr-2" />}
+            Passwort ändern
+          </Button>
+        </div>
       </Card>
 
       <Card className="p-4 space-y-3 border-destructive/40">

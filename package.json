@@ -10,6 +10,7 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
+    "db:migrate": "node scripts/migrate.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "deploy": "vercel --prod"
   },

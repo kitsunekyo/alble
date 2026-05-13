@@ -23,5 +23,18 @@ export const steps = sqliteTable(
   (t) => [uniqueIndex("steps_session_step_unique").on(t.session_id, t.step_number)],
 );
 
+export const authConfig = sqliteTable("auth_config", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
+export const authSessions = sqliteTable("auth_sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  token: text("token").notNull().unique(),
+  createdAt: integer("created_at").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+});
+
 export type SessionRow = typeof sessions.$inferSelect;
 export type StepRow = typeof steps.$inferSelect;

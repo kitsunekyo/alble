@@ -22,6 +22,13 @@
       "when": 1777842767532,
       "tag": "0002_step_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1778654400140,
+      "tag": "0003_clammy_swarm",
+      "breakpoints": true
     }
   ]
 }
