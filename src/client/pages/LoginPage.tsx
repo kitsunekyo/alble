@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Card } from "@/client/components/ui/card";
 
 export function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,16 +15,17 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
 
+  const redirectTo = searchParams.get("redirect") ?? "/";
+
   useEffect(() => {
     fetch("/api/auth/check")
       .then((res) => {
         if (res.ok) {
-          const redirect = searchParams.get("redirect") ?? "/";
-          router.replace(redirect);
+          window.location.href = redirectTo;
         }
       })
       .finally(() => setChecking(false));
-  }, [router, searchParams]);
+  }, [redirectTo]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,8 +42,7 @@ export function LoginPage() {
         setError(data.error ?? "Login fehlgeschlagen");
         return;
       }
-      const redirect = searchParams.get("redirect") ?? "/";
-      router.replace(redirect);
+      window.location.href = redirectTo;
     } catch {
       setError("Verbindungsfehler");
     } finally {
