@@ -34,8 +34,18 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   listSessions: () => request<SessionDTO[]>("/api/sessions"),
-  todaySession: () => request<SessionDTO>("/api/sessions/today"),
-  sessionByDate: (date: string) => request<SessionDTO>(`/api/sessions/by-date/${date}`),
+  todaySession: () => request<SessionDTO | null>("/api/sessions/today"),
+  addTodayStep: (input: CreateStepInput) =>
+    request<SessionDTO>("/api/sessions/today/steps", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  sessionByDate: (date: string) => request<SessionDTO | null>(`/api/sessions/by-date/${date}`),
+  addStepByDate: (date: string, input: CreateStepInput) =>
+    request<SessionDTO>(`/api/sessions/by-date/${date}/steps`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
   getSession: (id: number) => request<SessionDTO>(`/api/sessions/${id}`),
   createSession: (input: CreateSessionInput) =>
     request<SessionDTO>("/api/sessions", { method: "POST", body: JSON.stringify(input) }),

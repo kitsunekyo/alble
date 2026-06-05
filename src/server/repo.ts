@@ -81,10 +81,22 @@ export async function getOrCreateTodaySession(): Promise<SessionDTO> {
   return createSession({ date: today });
 }
 
+export async function getSessionByDate(date: string): Promise<SessionDTO | null> {
+  const s = await db.select().from(sessions).where(eq(sessions.date, date)).get();
+  if (!s) return null;
+  return getSession(s.id);
+}
+
 export async function getOrCreateSessionByDate(date: string): Promise<SessionDTO> {
-  const existing = await db.select().from(sessions).where(eq(sessions.date, date)).get();
-  if (existing) return getSession(existing.id) as Promise<SessionDTO>;
+  const existing = await getSessionByDate(date);
+  if (existing) return existing;
   return createSession({ date });
+}
+
+export async function addStepToSessionByDate(date: string, input: CreateStepInput): Promise<SessionDTO> {
+  const session = await getOrCreateSessionByDate(date);
+  await addStep(session.id, input);
+  return (await getSession(session.id))!;
 }
 
 export async function createSession(input: CreateSessionInput): Promise<SessionDTO> {
@@ -176,6 +188,12 @@ export async function deleteStep(stepId: number): Promise<boolean> {
     if (r) await db.update(steps).set({ step_number: i + 1 }).where(eq(steps.id, r.id)).run();
   }
   return true;
+}
+
+export async function addStepToTodaySession(input: CreateStepInput): Promise<SessionDTO> {
+  const session = await getOrCreateTodaySession();
+  await addStep(session.id, input);
+  return (await getSession(session.id))!;
 }
 
 export async function countSessions(): Promise<number> {

@@ -60,14 +60,38 @@ export const apiRoutes = {
   },
 
   "/api/sessions/today": {
-    GET: async () => json(await repo.getOrCreateTodaySession()),
+    GET: async () => {
+      const session = await repo.getTodaySession();
+      if (!session) return json(null);
+      return json(session);
+    },
+  },
+
+  "/api/sessions/today/steps": {
+    POST: async (req: Request) => {
+      const r = await readJson(req, createStepSchema);
+      if (!r.ok) return r.res;
+      return json(await repo.addStepToTodaySession(r.data), { status: 201 });
+    },
   },
 
   "/api/sessions/by-date/:date": {
     GET: async (req: RouteRequest) => {
       const date = req.params.date;
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return badRequest("Invalid date format, expected YYYY-MM-DD");
-      return json(await repo.getOrCreateSessionByDate(date));
+      const session = await repo.getSessionByDate(date);
+      if (!session) return json(null);
+      return json(session);
+    },
+  },
+
+  "/api/sessions/by-date/:date/steps": {
+    POST: async (req: RouteRequest) => {
+      const date = req.params.date;
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return badRequest("Invalid date format, expected YYYY-MM-DD");
+      const r = await readJson(req, createStepSchema);
+      if (!r.ok) return r.res;
+      return json(await repo.addStepToSessionByDate(date, r.data), { status: 201 });
     },
   },
 

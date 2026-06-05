@@ -78,6 +78,33 @@ export function useDeleteStep() {
   });
 }
 
+export function useAddTodayStep() {
+  const invalidate = useInvalidateAll();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateStepInput) => api.addTodayStep(input),
+    onSuccess: (session) => {
+      // Update the today cache with the returned session so the UI immediately
+      // has a real session id for subsequent step additions.
+      qc.setQueryData(KEYS.today, session);
+      invalidate();
+    },
+  });
+}
+
+export function useAddStepByDate() {
+  const invalidate = useInvalidateAll();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { date: string; input: CreateStepInput }) =>
+      api.addStepByDate(vars.date, vars.input),
+    onSuccess: (session, vars) => {
+      qc.setQueryData(["sessions", "by-date", vars.date], session);
+      invalidate();
+    },
+  });
+}
+
 export function useImportCsv() {
   const invalidate = useInvalidateAll();
   return useMutation({

@@ -5,6 +5,7 @@ import { Loader2, Trash2, ChevronDown, ChevronRight, Pencil } from "lucide-react
 import {
   useSessions,
   useAddStep,
+  useAddStepByDate,
   useSessionByDate,
   useDeleteSession,
   useUpdateSession,
@@ -129,6 +130,7 @@ function DateEntryForm() {
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const session = useSessionByDate(selectedDate);
   const addStep = useAddStep();
+  const addStepByDate = useAddStepByDate();
 
   const [duration, setDuration] = useState<DurationParts>({
     hours: "",
@@ -138,8 +140,13 @@ function DateEntryForm() {
   const [rating, setRating] = useState<Rating | null>(null);
   const [notes, setNotes] = useState("");
 
+  function clearForm() {
+    setDuration({ hours: "", minutes: "", seconds: "" });
+    setRating(null);
+    setNotes("");
+  }
+
   function submit() {
-    if (!session.data) return;
     const dur = durationPartsToSeconds(duration);
     if (dur === null || dur > 86_400) {
       toast.error("Dauer ungültig");
@@ -150,25 +157,32 @@ function DateEntryForm() {
       return;
     }
     const trimmedNotes = notes.trim();
-    addStep.mutate(
-      {
-        sessionId: session.data.id,
-        input: {
-          duration_seconds: dur,
-          rating,
-          notes: trimmedNotes === "" ? null : trimmedNotes,
+    const input = {
+      duration_seconds: dur,
+      rating,
+      notes: trimmedNotes === "" ? null : trimmedNotes,
+    };
+
+    if (session.data) {
+      addStep.mutate(
+        { sessionId: session.data.id, input },
+        {
+          onSuccess: clearForm,
+          onError: (e) => toast.error(e.message),
         },
-      },
-      {
-        onSuccess: () => {
-          setDuration({ hours: "", minutes: "", seconds: "" });
-          setRating(null);
-          setNotes("");
+      );
+    } else {
+      addStepByDate.mutate(
+        { date: selectedDate, input },
+        {
+          onSuccess: clearForm,
+          onError: (e) => toast.error(e.message),
         },
-        onError: (e) => toast.error(e.message),
-      },
-    );
+      );
+    }
   }
+
+  const isPending = addStep.isPending || addStepByDate.isPending;
 
   return (
     <Card className="p-4">
@@ -180,22 +194,26 @@ function DateEntryForm() {
           onChange={(e) => setSelectedDate(e.target.value)}
           className="w-auto"
         />
-        {session.data && (
+        {session.data ? (
           <span className="text-sm text-muted-foreground ml-auto">
             {formatWeekday(session.data.date ?? selectedDate)}, {formatDate(session.data.date ?? selectedDate)} ·{" "}
             Trainingstag {session.data.global_day} · {session.data.steps.length} Einheit
             {session.data.steps.length === 1 ? "" : "en"}
           </span>
-        )}
+        ) : !session.isLoading ? (
+          <span className="text-sm text-muted-foreground ml-auto">
+            {formatWeekday(selectedDate)}, {formatDate(selectedDate)} · 0 Einheiten
+          </span>
+        ) : null}
       </div>
 
       {session.isLoading ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground">
           <Loader2 className="size-5 animate-spin" />
         </div>
-      ) : session.data ? (
+      ) : (
         <>
-          {session.data.steps.length > 0 && (
+          {session.data && session.data.steps.length > 0 && (
             <div className="space-y-1.5 mb-4">
               {session.data.steps.map((step) => (
                 <StepRow key={step.id} step={step} />
@@ -208,8 +226,8 @@ function DateEntryForm() {
               <div className="flex-1">
                 <DurationInput value={duration} onChange={setDuration} onEnter={submit} />
               </div>
-              <Button onClick={submit} disabled={addStep.isPending} className="min-w-20">
-                {addStep.isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
+              <Button onClick={submit} disabled={isPending} className="min-w-20">
+                {isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
               </Button>
             </div>
             <RatingPicker value={rating} onChange={setRating} />
@@ -221,7 +239,7 @@ function DateEntryForm() {
             />
           </div>
         </>
-      ) : null}
+      )}
     </Card>
   );
 }
