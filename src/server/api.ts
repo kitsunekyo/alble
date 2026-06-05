@@ -11,6 +11,7 @@ import { db } from "./db/client";
 import { sessions, steps } from "./db/schema";
 import { asc } from "drizzle-orm";
 import { login, logout, validateSession, setSessionCookie, clearSessionCookie, getPasswordHash, setPassword, changePassword, requireAuth } from "./auth";
+import { todayIsoString } from "../shared/dates";
 
 type RouteRequest = Request & { params: Record<string, string> };
 
@@ -190,7 +191,7 @@ export const apiRoutes = {
       return new Response(csv, {
         headers: {
           "content-type": "text/csv; charset=utf-8",
-          "content-disposition": `attachment; filename="alble-${new Date().toISOString().slice(0, 10)}.csv"`,
+          "content-disposition": `attachment; filename="alble-${todayIsoString()}.csv"`,
         },
       });
     },

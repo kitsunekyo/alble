@@ -14,7 +14,7 @@ import {
   type DurationParts,
 } from "@/client/components/DurationInput";
 import { formatDuration, type Rating } from "@/shared/ratings";
-import { formatDate, formatWeekday, getCalendarWeek } from "@/shared/dates";
+import { formatDate, formatWeekday, getCalendarWeek, todayIsoString } from "@/shared/dates";
 import { toast } from "sonner";
 import type { StepDTO } from "@/shared/schemas";
 
@@ -46,7 +46,7 @@ export function Today() {
 
   if (!session.data) {
     // No session exists for today yet — still show the input form.
-    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayIso = todayIsoString();
     const dateLabel = `${formatWeekday(todayIso)}, ${formatDate(todayIso)}`;
     const weekLabel = getCalendarWeek(todayIso).label;
 

@@ -2,6 +2,7 @@ import { db } from "./db/client";
 import { sessions, steps, type SessionRow, type StepRow } from "./db/schema";
 import { and, asc, desc, eq, isNotNull, max, sql } from "drizzle-orm";
 import type { Rating } from "../shared/ratings";
+import { todayIsoString } from "../shared/dates";
 import type {
   CreateSessionInput,
   UpdateSessionInput,
@@ -68,7 +69,7 @@ export async function getSession(id: number): Promise<SessionDTO | null> {
 }
 
 export async function getTodaySession(): Promise<SessionDTO | null> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIsoString();
   const s = await db.select().from(sessions).where(eq(sessions.date, today)).get();
   if (!s) return null;
   return getSession(s.id);
@@ -77,7 +78,7 @@ export async function getTodaySession(): Promise<SessionDTO | null> {
 export async function getOrCreateTodaySession(): Promise<SessionDTO> {
   const existing = await getTodaySession();
   if (existing) return existing;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIsoString();
   return createSession({ date: today });
 }
 

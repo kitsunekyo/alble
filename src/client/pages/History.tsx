@@ -44,6 +44,7 @@ import {
   formatDate,
   formatWeekday,
   getCalendarWeek,
+  todayIsoString,
 } from "@/shared/dates";
 import type { SessionDTO, StepDTO } from "@/shared/schemas";
 import { toast } from "sonner";
@@ -126,7 +127,7 @@ export function History() {
 }
 
 function DateEntryForm() {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = todayIsoString();
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const session = useSessionByDate(selectedDate);
   const addStep = useAddStep();

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarClock, History, BarChart3, Settings as SettingsIcon } from "lucide-react";
+import { ThemeToggle } from "@/client/components/ThemeToggle";
 import { cn } from "@/client/lib/utils";
 
 const navItems = [
@@ -37,6 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {item.label}
             </Link>
           ))}
+          <ThemeToggle />
         </nav>
       </header>
 
@@ -48,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -65,6 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          <ThemeToggle />
         </div>
       </nav>
     </div>
