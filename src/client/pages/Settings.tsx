@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, Upload, Download, Trash2, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Loader2, Upload, Download, Trash2, KeyRound, Eye, EyeOff, Sun, Moon, Monitor } from "lucide-react";
 import { useImportCsv, useWipe, useSessions } from "@/client/hooks/use-sessions";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
@@ -19,9 +20,16 @@ import {
 } from "@/client/components/ui/alert-dialog";
 import { toast } from "sonner";
 
+const themeOptions = [
+  { key: "system", label: "System", icon: Monitor },
+  { key: "light", label: "Hell", icon: Sun },
+  { key: "dark", label: "Dunkel", icon: Moon },
+] as const;
+
 export function Settings() {
   const fileRef = useRef<HTMLInputElement>(null);
   const sessions = useSessions();
+  const { theme, setTheme } = useTheme();
   const importCsv = useImportCsv();
   const wipe = useWipe();
   const [lastImport, setLastImport] = useState<string | null>(null);
@@ -90,6 +98,36 @@ export function Settings() {
             <Download className="size-4 mr-2" /> CSV herunterladen
           </a>
         </Button>
+      </Card>
+
+      <Card className="p-4 space-y-3">
+        <div>
+          <h2 className="font-medium">Design</h2>
+          <p className="text-sm text-muted-foreground">
+            Wähle zwischen hellem, dunklem oder System-Design.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {themeOptions.map((opt) => {
+            const Icon = opt.icon;
+            const isActive = (theme ?? "system") === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setTheme(opt.key)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <Icon className="size-4" />
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
       </Card>
 
       <Card className="p-4 space-y-3">
