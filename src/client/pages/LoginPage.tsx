@@ -61,9 +61,14 @@ export function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-dvh p-4">
       <Card className="w-full max-w-sm p-6 space-y-6">
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-2">
+          <div className="text-5xl mb-2">🐶</div>
           <h1 className="text-2xl font-semibold">Alble</h1>
           <p className="text-sm text-muted-foreground">Allein-Bleib-Training</p>
+          <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto">
+            Dokumentiere dein Training, tracke Fortschritte und hilf deinem
+            Hund, entspannt allein zu bleiben. 🐾
+          </p>
         </div>
 
         <form onSubmit={submit} className="space-y-4">
