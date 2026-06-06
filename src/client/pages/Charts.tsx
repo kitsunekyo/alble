@@ -322,7 +322,7 @@ function buildData(sessions: SessionDTO[]) {
       });
       const ratingIndex = RATINGS.indexOf(rating) + 1;
       strip.push({
-        x: ratingIndex + (Math.random() - 0.5) * 0.6,
+        x: ratingIndex + deterministicJitter(s.date, step.step_number, step.duration_seconds),
         y: step.duration_seconds,
         rating,
         date: s.date,
@@ -361,4 +361,19 @@ function buildData(sessions: SessionDTO[]) {
   scatter.sort((a, b) => a.x - b.x);
 
   return { scatter, daily, weekly, strip };
+}
+
+/**
+ * Deterministic jitter for scatter plot points.
+ * Uses step properties (date, step_number, duration) to produce a stable
+ * pseudo-random offset between -0.3 and +0.3. Points stay in place across
+ * re-renders and session loads.
+ */
+function deterministicJitter(date: string, stepNumber: number, duration: number): number {
+  const seed =
+    date.split("-").reduce((acc, v) => acc * 31 + parseInt(v, 10), 0) +
+    stepNumber * 7 +
+    duration * 13;
+  const x = Math.sin(seed) * 10000;
+  return (x - Math.floor(x) - 0.5) * 0.6;
 }
