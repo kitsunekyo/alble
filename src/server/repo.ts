@@ -216,9 +216,10 @@ export interface CsvRow {
   note: string | null;
 }
 
-export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number; steps: number }> {
+export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number; steps: number; skipped: number }> {
   let sessionsCreated = 0;
   let stepsCreated = 0;
+  let skipped = 0;
 
   // Group rows by global_day, preserve step order
   const byDay = new Map<number, CsvRow[]>();
@@ -239,7 +240,10 @@ export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number;
         .from(sessions)
         .where(eq(sessions.global_day, day))
         .get();
-      if (existing) continue;
+      if (existing) {
+        skipped++;
+        continue;
+      }
 
       const created = await tx
         .insert(sessions)
@@ -269,5 +273,5 @@ export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number;
     }
   });
 
-  return { sessions: sessionsCreated, steps: stepsCreated };
+  return { sessions: sessionsCreated, steps: stepsCreated, skipped };
 }

@@ -43,11 +43,15 @@ export function Settings() {
     if (!file) return;
     importCsv.mutate(file, {
       onSuccess: (r) => {
-        setLastImport(
-          `Importiert: ${r.sessions} Sessions, ${r.steps} Einheiten` +
-            (r.parseErrors.length > 0 ? ` (${r.parseErrors.length} Fehler übersprungen)` : ""),
-        );
-        toast.success("CSV importiert");
+        const parts = [`Importiert: ${r.sessions} Sessions, ${r.steps} Einheiten`];
+        if (r.skipped > 0) parts.push(`${r.skipped} bereits vorhanden übersprungen`);
+        if (r.parseErrors.length > 0) parts.push(`${r.parseErrors.length} Fehler übersprungen`);
+        setLastImport(parts.join(" · "));
+        if (r.skipped > 0) {
+          toast.warning(`${r.skipped} Session${r.skipped === 1 ? "" : "en"} übersprungen (existieren bereits)`);
+        } else {
+          toast.success("CSV importiert");
+        }
       },
       onError: (e) => toast.error(e.message),
     });

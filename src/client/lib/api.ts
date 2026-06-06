@@ -67,7 +67,7 @@ export const api = {
     fd.append("file", file);
     return fetch("/api/import/csv", { method: "POST", body: fd }).then(async (res) => {
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Import failed");
-      return res.json() as Promise<{ sessions: number; steps: number; parseErrors: { line: number; message: string }[] }>;
+      return res.json() as Promise<{ sessions: number; steps: number; skipped: number; parseErrors: { line: number; message: string }[] }>;
     });
   },
   wipe: () => request<void>("/api/wipe", { method: "POST" }),
