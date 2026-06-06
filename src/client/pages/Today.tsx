@@ -75,7 +75,7 @@ export function Today() {
     }
 
     return (
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-40 md:pb-8">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8">
         <div className="mb-4">
           <h1 className="text-2xl font-semibold">Heute</h1>
           <p className="text-sm text-muted-foreground">
@@ -89,7 +89,7 @@ export function Today() {
           </Card>
         </div>
 
-        <Card className="p-4 fixed md:static left-0 right-0 bottom-16 md:bottom-auto z-30 rounded-none md:rounded-xl border-t md:border bg-background">
+        <Card className="p-4 md:rounded-xl md:border bg-background">
           <div className="max-w-2xl mx-auto space-y-3">
             <div className="flex gap-2 items-end">
               <div className="flex-1">
@@ -144,7 +144,7 @@ export function Today() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-40 md:pb-8">
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8">
       <div className="mb-4">
         <h1 className="text-2xl font-semibold">Heute</h1>
         <p className="text-sm text-muted-foreground">
@@ -173,7 +173,7 @@ export function Today() {
         )}
       </div>
 
-      <Card className="p-4 fixed md:static left-0 right-0 bottom-16 md:bottom-auto z-30 rounded-none md:rounded-xl border-t md:border bg-background">
+      <Card className="p-4 md:rounded-xl md:border bg-background">
         <div className="max-w-2xl mx-auto space-y-3">
           <div className="flex gap-2 items-end">
             <div className="flex-1">
