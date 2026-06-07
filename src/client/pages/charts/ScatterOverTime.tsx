@@ -12,7 +12,7 @@ import {
 import { Card } from "@/client/components/ui/card";
 import { RATINGS, RATING_COLORS, formatDuration, type Rating } from "@/shared/ratings";
 import { formatDate, formatTimestampDateShort } from "@/shared/dates";
-import { CHART_MARGIN, COMMON_X_AXIS_LABEL, COMMON_TICK } from "./chart-config";
+import { CHART_MARGIN, COMMON_X_AXIS_LABEL, COMMON_TICK, TOOLTIP_CONTAINER } from "./chart-config";
 import type { ScatterPoint } from "./chart-data";
 
 interface Props {
@@ -50,7 +50,7 @@ export const ScatterOverTime = React.memo(function ScatterOverTime({ scatterByRa
                 if (!payload || payload.length === 0) return null;
                 const p = payload[0]!.payload as ScatterPoint;
                 return (
-                  <div className="rounded-md border bg-background p-2 text-xs shadow-md">
+                  <div className={TOOLTIP_CONTAINER}>
                     <div>
                       <strong>{formatDate(p.date)}</strong> · Schritt {p.step}
                     </div>

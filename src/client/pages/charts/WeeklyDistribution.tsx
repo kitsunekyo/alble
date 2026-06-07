@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import { Card } from "@/client/components/ui/card";
 import { RATINGS, RATING_COLORS, type Rating } from "@/shared/ratings";
-import { CHART_MARGIN, COMMON_TICK, COMMON_TOOLTIP_STYLE } from "./chart-config";
+import { CHART_MARGIN, COMMON_TICK, TOOLTIP_CONTAINER } from "./chart-config";
 import type { WeeklyRow } from "./chart-data";
 
 interface Props {
@@ -43,7 +43,28 @@ export const WeeklyDistribution = React.memo(function WeeklyDistribution({ weekl
             />
             <YAxis tick={COMMON_TICK} />
             <Tooltip
-              contentStyle={COMMON_TOOLTIP_STYLE}
+              content={({ active, payload, label }) => {
+                if (!active || !payload || payload.length === 0) return null;
+                const total = payload.reduce((sum, entry) => sum + (Number(entry.value) || 0), 0);
+                return (
+                  <div className={TOOLTIP_CONTAINER}>
+                    <div className="font-medium mb-1">{label}</div>
+                    {payload.map((entry) => (
+                      <div key={String(entry.dataKey)} className="flex items-center gap-1.5">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full"
+                          style={{ backgroundColor: entry.color }}
+                        />
+                        <span>{entry.name}:</span>
+                        <span className="tabular-nums font-medium">{entry.value}</span>
+                      </div>
+                    ))}
+                    <div className="border-t mt-1.5 pt-1 text-muted-foreground">
+                      Gesamt: {total} Schritte
+                    </div>
+                  </div>
+                );
+              }}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             {RATINGS.filter((r) => activeRatings.has(r)).map((rating) => (
