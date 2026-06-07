@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -11,16 +11,39 @@ import {
 } from "recharts";
 import { Card } from "@/client/components/ui/card";
 import { RATINGS, RATING_COLORS, formatDuration, type Rating } from "@/shared/ratings";
-import { formatDate, formatTimestampDateShort } from "@/shared/dates";
+import { formatDate, formatTimestampDateShort, getCalendarWeek } from "@/shared/dates";
 import { CHART_MARGIN, COMMON_X_AXIS_LABEL, COMMON_TICK } from "./chart-config";
-import type { ScatterPoint } from "./chart-data";
+import type { ScatterPoint, SelectionState } from "./chart-data";
 
 interface Props {
   scatterByRating: Record<Rating, ScatterPoint[]>;
   activeRatings: Set<Rating>;
+  selection: SelectionState;
+  onSelect: React.Dispatch<React.SetStateAction<SelectionState>>;
 }
 
-export const ScatterOverTime = React.memo(function ScatterOverTime({ scatterByRating, activeRatings }: Props) {
+export const ScatterOverTime = React.memo(function ScatterOverTime({ scatterByRating, activeRatings, selection, onSelect }: Props) {
+  const hasWeekSelection = selection.type === "week" && selection.weekKey !== null;
+
+  const splitBySelection = useMemo(() => {
+    const result: Record<Rating, { selected: ScatterPoint[]; unselected: ScatterPoint[] }> = {} as any;
+    for (const rating of RATINGS) {
+      const points = scatterByRating[rating] ?? [];
+      if (!hasWeekSelection) {
+        result[rating] = { selected: [], unselected: points };
+        continue;
+      }
+      const selected: ScatterPoint[] = [];
+      const unselected: ScatterPoint[] = [];
+      for (const p of points) {
+        const week = getCalendarWeek(p.date);
+        (week.key === selection.weekKey ? selected : unselected).push(p);
+      }
+      result[rating] = { selected, unselected };
+    }
+    return result;
+  }, [scatterByRating, selection.weekKey, hasWeekSelection]);
+
   return (
     <Card className="p-4">
       <h2 className="text-sm font-medium mb-3">Trennungszeit über die Zeit</h2>
@@ -68,14 +91,39 @@ export const ScatterOverTime = React.memo(function ScatterOverTime({ scatterByRa
                 <span style={{ color: "var(--color-foreground)" }}>{value}</span>
               )}
             />
-            {RATINGS.filter((r) => activeRatings.has(r)).map((rating) => (
-              <Scatter
-                key={rating}
-                name={rating}
-                data={scatterByRating[rating]}
-                fill={RATING_COLORS[rating]}
-              />
-            ))}
+            {RATINGS.filter((r) => activeRatings.has(r) && splitBySelection[r]).map((rating) => {
+              const { selected, unselected } = splitBySelection[rating]!;
+              if (!hasWeekSelection) {
+                return (
+                  <Scatter
+                    key={rating}
+                    name={rating}
+                    data={unselected}
+                    fill={RATING_COLORS[rating]}
+                  />
+                );
+              }
+              return (
+                <React.Fragment key={rating}>
+                  {unselected.length > 0 && (
+                    <Scatter
+                      data={unselected}
+                      fill={RATING_COLORS[rating]}
+                      fillOpacity={0.15}
+                      r={2}
+                      legendType="none"
+                    />
+                  )}
+                  <Scatter
+                    name={rating}
+                    data={selected}
+                    fill={RATING_COLORS[rating]}
+                    fillOpacity={1}
+                    r={5}
+                  />
+                </React.Fragment>
+              );
+            })}
           </ScatterChart>
         </ResponsiveContainer>
       </div>

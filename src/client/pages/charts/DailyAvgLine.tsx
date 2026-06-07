@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -7,18 +7,33 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceArea,
 } from "recharts";
 import { Card } from "@/client/components/ui/card";
 import { formatDuration } from "@/shared/ratings";
-import { formatTimestampDate, formatTimestampDateShort } from "@/shared/dates";
+import { formatTimestampDate, formatTimestampDateShort, getCalendarWeek } from "@/shared/dates";
 import { CHART_MARGIN, COMMON_X_AXIS_LABEL, COMMON_TICK, COMMON_TOOLTIP_STYLE } from "./chart-config";
-import type { DailyPoint } from "./chart-data";
+import type { DailyPoint, SelectionState } from "./chart-data";
 
 interface Props {
   daily: DailyPoint[];
+  selection: SelectionState;
+  onSelect: React.Dispatch<React.SetStateAction<SelectionState>>;
 }
 
-export const DailyAvgLine = React.memo(function DailyAvgLine({ daily }: Props) {
+export const DailyAvgLine = React.memo(function DailyAvgLine({ daily, selection, onSelect }: Props) {
+  const weekHighlight = useMemo(() => {
+    if (selection.type !== "week" || selection.weekKey === null) return null;
+    const daysInWeek = daily.filter(d => {
+      const week = getCalendarWeek(d.date);
+      return week.key === selection.weekKey;
+    });
+    if (daysInWeek.length === 0) return null;
+    const minX = Math.min(...daysInWeek.map(d => d.x));
+    const maxX = Math.max(...daysInWeek.map(d => d.x));
+    return { x1: minX, x2: maxX };
+  }, [daily, selection]);
+
   return (
     <Card className="p-4">
       <h2 className="text-sm font-medium mb-3">Durchschnittliche Trennungszeit pro Tag</h2>
@@ -43,6 +58,9 @@ export const DailyAvgLine = React.memo(function DailyAvgLine({ daily }: Props) {
               labelFormatter={(label) => formatTimestampDate(Number(label))}
               formatter={(v) => [formatDuration(Number(v)), "⌀ Dauer"]}
             />
+            {weekHighlight && (
+              <ReferenceArea x1={weekHighlight.x1} x2={weekHighlight.x2} fill="var(--color-chart-1)" fillOpacity={0.08} />
+            )}
             <Line
               type="monotone"
               dataKey="avg"

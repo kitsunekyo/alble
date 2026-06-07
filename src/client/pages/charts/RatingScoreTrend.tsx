@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -7,19 +7,34 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceArea,
   ReferenceLine,
 } from "recharts";
 import { Card } from "@/client/components/ui/card";
-import { formatTimestampDate, formatTimestampDateShort } from "@/shared/dates";
+import { formatTimestampDate, formatTimestampDateShort, getCalendarWeek } from "@/shared/dates";
 import { CHART_MARGIN, COMMON_X_AXIS_LABEL, COMMON_TICK, COMMON_TOOLTIP_STYLE } from "./chart-config";
 import { closestRatingLabel } from "./chart-helpers";
-import type { DailyPoint } from "./chart-data";
+import type { DailyPoint, SelectionState } from "./chart-data";
 
 interface Props {
   scoreDaily: DailyPoint[];
+  selection: SelectionState;
+  onSelect: React.Dispatch<React.SetStateAction<SelectionState>>;
 }
 
-export const RatingScoreTrend = React.memo(function RatingScoreTrend({ scoreDaily }: Props) {
+export const RatingScoreTrend = React.memo(function RatingScoreTrend({ scoreDaily, selection, onSelect }: Props) {
+  const weekHighlight = useMemo(() => {
+    if (selection.type !== "week" || selection.weekKey === null) return null;
+    const daysInWeek = scoreDaily.filter(d => {
+      const week = getCalendarWeek(d.date);
+      return week.key === selection.weekKey;
+    });
+    if (daysInWeek.length === 0) return null;
+    const minX = Math.min(...daysInWeek.map(d => d.x));
+    const maxX = Math.max(...daysInWeek.map(d => d.x));
+    return { x1: minX, x2: maxX };
+  }, [scoreDaily, selection]);
+
   return (
     <Card className="p-4">
       <h2 className="text-sm font-medium mb-3">Durchschnittliche Bewertung über die Zeit</h2>
@@ -45,6 +60,9 @@ export const RatingScoreTrend = React.memo(function RatingScoreTrend({ scoreDail
               }}
               tick={COMMON_TICK}
             />
+            {weekHighlight && (
+              <ReferenceArea x1={weekHighlight.x1} x2={weekHighlight.x2} fill="var(--color-chart-2)" fillOpacity={0.08} />
+            )}
             <ReferenceLine y={2.5} stroke="var(--color-border)" strokeDasharray="4 4" />
             <Tooltip
               contentStyle={COMMON_TOOLTIP_STYLE}

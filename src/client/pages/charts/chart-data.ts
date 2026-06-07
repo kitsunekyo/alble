@@ -4,6 +4,14 @@ import type { SessionDTO } from "@/shared/schemas";
 
 export type DateRange = "7d" | "30d" | "90d" | "all";
 
+export interface SelectionState {
+  type: "week" | "day" | "range" | null;
+  weekKey: number | null;
+  dayTimestamp: number | null;
+  rangeStart: number | null;
+  rangeEnd: number | null;
+}
+
 export interface StatsData {
   sessionCount: number;
   sessionCountDelta: number;

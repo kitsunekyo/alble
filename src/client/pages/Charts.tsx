@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useSessions } from "@/client/hooks/use-sessions";
 import { RATINGS, RATING_COLORS, RATING_SCORE, type Rating } from "@/shared/ratings";
-import { dateToIsoString, parseIsoDate } from "@/shared/dates";
-import { parseDuration, buildData, type DateRange } from "./charts/chart-data";
+import { dateToIsoString, getCalendarWeek, parseIsoDate } from "@/shared/dates";
+import { parseDuration, buildData, type DateRange, type SelectionState } from "./charts/chart-data";
 import { StatsSummary } from "./charts/StatsSummary";
 import { ScatterOverTime } from "./charts/ScatterOverTime";
 import { WeeklyDistribution } from "./charts/WeeklyDistribution";
@@ -20,6 +20,18 @@ export function Charts() {
   const hasAnyActive = activeRatings.size > 0;
 
   const [dateRange, setDateRange] = useState<DateRange>("30d");
+
+  const [selection, setSelection] = useState<SelectionState>({
+    type: null, weekKey: null, dayTimestamp: null, rangeStart: null, rangeEnd: null,
+  });
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelection({ type: null, weekKey: null, dayTimestamp: null, rangeStart: null, rangeEnd: null });
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const filteredSessions = useMemo(() => {
     if (dateRange === "all") return sessions.data ?? [];
@@ -214,34 +226,13 @@ export function Charts() {
         </div>
       ) : (
         <>
-          <ScatterOverTime scatterByRating={data.scatterByRating} activeRatings={activeRatings} />
-          <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} />
-          <DailyAvgLine daily={data.daily} />
-          <RatingScoreTrend scoreDaily={data.scoreDaily} />
+          <ScatterOverTime scatterByRating={data.scatterByRating} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
+          <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
+          <DailyAvgLine daily={data.daily} selection={selection} onSelect={setSelection} />
+          <RatingScoreTrend scoreDaily={data.scoreDaily} selection={selection} onSelect={setSelection} />
           <StripDistribution stripByRating={data.stripByRating} />
         </>
       )}
     </div>
   );
-}
-
-function getCalendarWeek(date: string) {
-  const d = parseIsoDate(date);
-  const thursday = new Date(d);
-  const day = (thursday.getUTCDay() + 6) % 7;
-  thursday.setUTCDate(thursday.getUTCDate() - day + 3);
-
-  const year = thursday.getUTCFullYear();
-  const firstThursday = new Date(Date.UTC(year, 0, 4));
-  const firstDay = (firstThursday.getUTCDay() + 6) % 7;
-  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDay + 3);
-
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const week = 1 + Math.round((thursday.getTime() - firstThursday.getTime()) / (7 * DAY_MS));
-  return {
-    year,
-    week,
-    key: year * 100 + week,
-    label: `KW ${week}/${year}`,
-  };
 }
