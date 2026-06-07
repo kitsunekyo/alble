@@ -13,7 +13,7 @@ import {
 import { Card } from "@/client/components/ui/card";
 import { RATINGS, RATING_COLORS, formatDuration, type Rating } from "@/shared/ratings";
 import { formatDate } from "@/shared/dates";
-import { CHART_MARGIN, COMMON_TICK } from "./chart-config";
+import { CHART_MARGIN, COMMON_TICK, TOOLTIP_CONTAINER } from "./chart-config";
 import type { StripPoint, RatingStats } from "./chart-data";
 
 interface Props {
@@ -77,7 +77,7 @@ export const StripDistribution = React.memo(function StripDistribution({ stripBy
                 if (!payload || payload.length === 0) return null;
                 const p = payload[0]!.payload as StripPoint;
                 return (
-                  <div className="rounded-md border bg-background p-2 text-xs shadow-md">
+                  <div className={TOOLTIP_CONTAINER}>
                     <div style={{ color: RATING_COLORS[p.rating] }}>{p.rating}</div>
                     <div className="tabular-nums">
                       {formatDuration(p.y)}
