@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -36,6 +36,9 @@ import type { SessionDTO } from "@/shared/schemas";
 export function Charts() {
   const sessions = useSessions();
 
+  const [activeRatings, setActiveRatings] = useState<Set<Rating>>(new Set(RATINGS));
+  const hasAnyActive = activeRatings.size > 0;
+
   const data = useMemo(() => buildData(sessions.data ?? []), [sessions.data]);
 
   if (sessions.isLoading) {
@@ -57,6 +60,40 @@ export function Charts() {
   return (
     <div className="max-w-5xl mx-auto px-4 pt-4 pb-8 space-y-6">
       <h1 className="text-2xl font-semibold">Charts</h1>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {RATINGS.map((rating) => {
+          const isActive = activeRatings.has(rating);
+          return (
+            <button
+              key={rating}
+              onClick={() => {
+                setActiveRatings((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(rating)) next.delete(rating);
+                  else next.add(rating);
+                  return next;
+                });
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border ${
+                isActive
+                  ? "text-white border-transparent"
+                  : "text-muted-foreground border-border bg-transparent"
+              }`}
+              style={isActive ? { backgroundColor: RATING_COLORS[rating] } : undefined}
+            >
+              {rating}
+            </button>
+          );
+        })}
+      </div>
+
+      {!hasAnyActive ? (
+        <div className="text-center text-muted-foreground py-12 border rounded-lg">
+          Keine Bewertungen ausgewählt
+        </div>
+      ) : (
+        <>
 
       <Card className="p-4">
         <h2 className="text-sm font-medium mb-3">Trennungszeit über die Zeit</h2>
@@ -110,11 +147,11 @@ export function Charts() {
                   <span style={{ color: "var(--color-foreground)" }}>{value}</span>
                 )}
               />
-              {RATINGS.map((rating) => (
+              {RATINGS.filter((r) => activeRatings.has(r)).map((rating) => (
                 <Scatter
                   key={rating}
                   name={rating}
-                  data={data.scatter.filter((p) => p.rating === rating)}
+                  data={data.scatterByRating[rating]}
                   fill={RATING_COLORS[rating]}
                 />
               ))}
@@ -153,7 +190,7 @@ export function Charts() {
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              {RATINGS.map((rating) => (
+              {RATINGS.filter((r) => activeRatings.has(r)).map((rating) => (
                 <Bar
                   key={rating}
                   dataKey={rating}
@@ -253,7 +290,7 @@ export function Charts() {
               {RATINGS.map((rating) => (
                 <Scatter
                   key={rating}
-                  data={data.strip.filter((p) => p.rating === rating)}
+                  data={data.stripByRating[rating]}
                   fill={RATING_COLORS[rating]}
                   fillOpacity={0.6}
                 />
@@ -262,6 +299,8 @@ export function Charts() {
           </ResponsiveContainer>
         </div>
       </Card>
+        </>
+      )}
     </div>
   );
 }
@@ -302,6 +341,12 @@ function buildData(sessions: SessionDTO[]) {
   const daily: DailyPoint[] = [];
   const weekly: WeeklyRow[] = [];
   const strip: StripPoint[] = [];
+  const scatterByRating: Record<Rating, ScatterPoint[]> = {
+    Ausgezeichnet: [], Gut: [], Mittel: [], Schlecht: [], Abbruch: [],
+  };
+  const stripByRating: Record<Rating, StripPoint[]> = {
+    Ausgezeichnet: [], Gut: [], Mittel: [], Schlecht: [], Abbruch: [],
+  };
 
   const weekMap = new Map<number, WeeklyRow>();
 
@@ -320,13 +365,22 @@ function buildData(sessions: SessionDTO[]) {
         step: step.step_number,
         rating,
       });
+      scatterByRating[rating].push({
+        x: dateX,
+        date: s.date,
+        y: step.duration_seconds,
+        step: step.step_number,
+        rating,
+      });
       const ratingIndex = RATINGS.indexOf(rating) + 1;
-      strip.push({
+      const stripPoint: StripPoint = {
         x: ratingIndex + deterministicJitter(s.date, step.step_number, step.duration_seconds),
         y: step.duration_seconds,
         rating,
         date: s.date,
-      });
+      };
+      strip.push(stripPoint);
+      stripByRating[rating].push(stripPoint);
       if (rating !== "Abbruch") {
         sum += step.duration_seconds;
         count++;
@@ -360,7 +414,7 @@ function buildData(sessions: SessionDTO[]) {
   daily.sort((a, b) => a.x - b.x);
   scatter.sort((a, b) => a.x - b.x);
 
-  return { scatter, daily, weekly, strip };
+  return { scatter, daily, weekly, strip, scatterByRating, stripByRating };
 }
 
 /**
