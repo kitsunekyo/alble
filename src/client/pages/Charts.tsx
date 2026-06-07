@@ -168,8 +168,8 @@ export function Charts() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-4 pb-8 space-y-6">
-      <h1 className="text-2xl font-semibold">Charts</h1>
+    <div className="max-w-5xl mx-auto px-4 pt-4 pb-8">
+      <h1 className="text-2xl font-semibold mb-4">Charts</h1>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {RATINGS.map((rating) => {
@@ -225,13 +225,15 @@ export function Charts() {
           Keine Bewertungen ausgewählt
         </div>
       ) : (
-        <>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ScatterOverTime scatterByRating={data.scatterByRating} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
-          <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
           <DailyAvgLine daily={data.daily} selection={selection} onSelect={setSelection} />
+          <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
           <RatingScoreTrend scoreDaily={data.scoreDaily} selection={selection} onSelect={setSelection} />
-          <StripDistribution stripByRating={data.stripByRating} ratingStats={data.ratingStats} />
-        </>
+          <div className="lg:col-span-2">
+            <StripDistribution stripByRating={data.stripByRating} ratingStats={data.ratingStats} />
+          </div>
+        </div>
       )}
     </div>
   );
