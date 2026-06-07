@@ -218,7 +218,7 @@ export function Charts() {
           <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} />
           <DailyAvgLine daily={data.daily} />
           <RatingScoreTrend scoreDaily={data.scoreDaily} />
-          <StripDistribution stripByRating={data.stripByRating} />
+          <StripDistribution stripByRating={data.stripByRating} ratingStats={data.ratingStats} />
         </>
       )}
     </div>

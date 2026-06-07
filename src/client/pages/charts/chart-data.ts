@@ -2,6 +2,15 @@ import { RATINGS, RATING_SCORE, type Rating } from "@/shared/ratings";
 import { dateToTimestamp, getCalendarWeek } from "@/shared/dates";
 import type { SessionDTO } from "@/shared/schemas";
 
+function percentiles(values: number[], p: number): number {
+  if (values.length === 0) return 0;
+  const index = (p / 100) * (values.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  if (lower === upper) return values[lower]!;
+  return values[lower]! + (values[upper]! - values[lower]!) * (index - lower);
+}
+
 export type DateRange = "7d" | "30d" | "90d" | "all";
 
 export interface StatsData {
@@ -46,6 +55,12 @@ export interface StripPoint {
   y: number;
   rating: Rating;
   date: string;
+}
+
+export interface RatingStats {
+  median: number;
+  q1: number;
+  q3: number;
 }
 
 export function parseDuration(range: DateRange): number {
@@ -114,6 +129,7 @@ export interface BuildDataResult {
   scatterByRating: Record<Rating, ScatterPoint[]>;
   stripByRating: Record<Rating, StripPoint[]>;
   scoreDaily: DailyPoint[];
+  ratingStats: Record<Rating, RatingStats>;
 }
 
 export function buildData(sessions: SessionDTO[], activeRatings: Set<Rating>): BuildDataResult {
@@ -226,9 +242,28 @@ export function buildData(sessions: SessionDTO[], activeRatings: Set<Rating>): B
 
   scatter.sort((a, b) => a.x - b.x);
 
-  if (weekly.length > 52) {
-    return { scatter, daily, weekly: aggregateMonthly(weekly), strip, scatterByRating, stripByRating, scoreDaily };
+  const ratingStats: Record<Rating, RatingStats> = {
+    Ausgezeichnet: { median: 0, q1: 0, q3: 0 },
+    Gut: { median: 0, q1: 0, q3: 0 },
+    Mittel: { median: 0, q1: 0, q3: 0 },
+    Schlecht: { median: 0, q1: 0, q3: 0 },
+    Abbruch: { median: 0, q1: 0, q3: 0 },
+  };
+
+  for (const r of RATINGS) {
+    const durations = stripByRating[r].map(p => p.y).sort((a, b) => a - b);
+    if (durations.length > 0) {
+      ratingStats[r] = {
+        median: percentiles(durations, 50),
+        q1: percentiles(durations, 25),
+        q3: percentiles(durations, 75),
+      };
+    }
   }
 
-  return { scatter, daily, weekly, strip, scatterByRating, stripByRating, scoreDaily };
+  if (weekly.length > 52) {
+    return { scatter, daily, weekly: aggregateMonthly(weekly), strip, scatterByRating, stripByRating, scoreDaily, ratingStats };
+  }
+
+  return { scatter, daily, weekly, strip, scatterByRating, stripByRating, scoreDaily, ratingStats };
 }
