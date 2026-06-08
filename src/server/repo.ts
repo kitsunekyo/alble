@@ -14,7 +14,7 @@ import type {
   UpdateJournalEntryInput,
   JournalEntryDTO,
 } from "../shared/schemas";
-import type { Mood } from "../shared/journal";
+import { type Mood, MOOD_KEYS } from "../shared/journal";
 
 function toStepDTO(row: StepRow): StepDTO {
   return {
@@ -280,12 +280,23 @@ export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number;
   return { sessions: sessionsCreated, steps: stepsCreated, skipped };
 }
 
+function parseMoods(raw: string | null): Mood[] {
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((v): v is Mood => typeof v === "string" && MOOD_KEYS.includes(v as Mood));
+  } catch {
+    return [];
+  }
+}
+
 function toJournalEntryDTO(row: JournalEntryRow): JournalEntryDTO {
   return {
     id: row.id,
     timestamp: row.timestamp,
     text: row.text,
-    mood: (row.mood as Mood) ?? null,
+    moods: parseMoods(row.moods),
     created_at: row.created_at,
   };
 }
@@ -302,12 +313,13 @@ export async function getJournalEntry(id: number): Promise<JournalEntryDTO | nul
 }
 
 export async function createJournalEntry(input: CreateJournalEntryInput): Promise<JournalEntryDTO> {
+  const moodsArr = input.moods ?? [];
   const created = await db
     .insert(journalEntries)
     .values({
       timestamp: input.timestamp,
       text: input.text,
-      mood: input.mood ?? null,
+      moods: moodsArr.length > 0 ? JSON.stringify(moodsArr) : null,
       created_at: Date.now(),
     })
     .returning()
@@ -321,7 +333,10 @@ export async function updateJournalEntry(id: number, input: UpdateJournalEntryIn
   const patch: Partial<JournalEntryRow> = {};
   if (input.timestamp !== undefined) patch.timestamp = input.timestamp;
   if (input.text !== undefined) patch.text = input.text;
-  if ("mood" in input) patch.mood = input.mood ?? null;
+  if ("moods" in input) {
+    const arr = input.moods ?? [];
+    patch.moods = arr.length > 0 ? JSON.stringify(arr) : null;
+  }
   if (Object.keys(patch).length === 0) return toJournalEntryDTO(existing);
   await db.update(journalEntries).set(patch).where(eq(journalEntries.id, id)).run();
   const updated = await db.select().from(journalEntries).where(eq(journalEntries.id, id)).get();

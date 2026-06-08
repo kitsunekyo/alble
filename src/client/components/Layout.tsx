@@ -11,7 +11,6 @@ const navItems = [
   { to: "/history", label: "Verlauf", icon: History },
   { to: "/charts", label: "Charts", icon: BarChart3 },
   { to: "/journal", label: "Tagebuch", icon: BookOpen },
-  { to: "/settings", label: "Einstellungen", icon: SettingsIcon },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -39,8 +38,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {item.label}
             </Link>
           ))}
+          <Link
+            href="/settings"
+            className={cn(
+              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+              isActivePath(pathname, "/settings", false)
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
+            )}
+          >
+            Einstellungen
+          </Link>
           <ThemeToggle />
         </nav>
+      </header>
+
+      <header className="md:hidden sticky top-0 bg-background border-b z-30 flex items-center justify-end px-4 py-2 gap-1">
+        <Link
+          href="/settings"
+          className={cn(
+            "p-2 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted",
+            isActivePath(pathname, "/settings", false) && "text-foreground bg-muted",
+          )}
+          aria-label="Einstellungen"
+        >
+          <SettingsIcon className="size-5" />
+        </Link>
+        <ThemeToggle />
       </header>
 
       <main className="flex-1 pb-20 md:pb-0">
@@ -51,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -68,7 +92,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
-          <ThemeToggle />
         </div>
       </nav>
     </div>

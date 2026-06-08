@@ -59,7 +59,7 @@ export function Journal() {
   const currentMM = String(now.getMinutes()).padStart(2, "0");
 
   const [text, setText] = useState("");
-  const [mood, setMood] = useState<Mood | null>(null);
+  const [moods, setMoods] = useState<Mood[]>([]);
   const [timeInput, setTimeInput] = useState(`${currentHH}:${currentMM}`);
 
   function resetTime() {
@@ -79,11 +79,11 @@ export function Journal() {
     const today = todayIsoString();
     const timestamp = `${today}T${hh}:${mm}:00`;
     addEntry.mutate(
-      { timestamp, text: trimmed, mood },
+      { timestamp, text: trimmed, moods },
       {
         onSuccess: () => {
           setText("");
-          setMood(null);
+          setMoods([]);
           resetTime();
         },
         onError: (e) => toast.error(e.message),
@@ -134,7 +134,7 @@ export function Journal() {
             className="min-h-20"
             maxLength={2000}
           />
-          <MoodPicker value={mood} onChange={setMood} />
+          <MoodPicker value={moods} onChange={setMoods} />
           <div className="flex gap-2 items-end">
             <div className="w-28">
               <Input type="time" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
@@ -173,20 +173,26 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   const deleteEntry = useDeleteJournalEntry();
   const [editing, setEditing] = useState(false);
   const [draftText, setDraftText] = useState(entry.text);
-  const [draftMood, setDraftMood] = useState<Mood | null>(entry.mood);
+  const [draftMoods, setDraftMoods] = useState<Mood[]>(entry.moods);
   const [draftTime, setDraftTime] = useState(extractTime(entry.timestamp));
 
   if (!editing) {
-    const moodInfo = entry.mood ? MOOD_MAP[entry.mood] : null;
+    const moodInfos = entry.moods
+      .map((m) => MOOD_MAP[m])
+      .filter((v): v is NonNullable<typeof v> => !!v);
     return (
       <Card className="p-3 flex items-start gap-3">
         <div className="text-sm tabular-nums text-muted-foreground w-12 shrink-0 pt-0.5">
           {extractTime(entry.timestamp)}
         </div>
-        {moodInfo && (
-          <span className="text-lg shrink-0 pt-0.5" title={moodInfo.label}>
-            {moodInfo.emoji}
-          </span>
+        {moodInfos.length > 0 && (
+          <div className="flex flex-wrap gap-1 shrink-0 pt-0.5">
+            {moodInfos.map((mi) => (
+              <span key={mi.key} className="text-xs text-muted-foreground">
+                {mi.emoji}&nbsp;{mi.label}
+              </span>
+            ))}
+          </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm whitespace-pre-wrap">{entry.text}</p>
@@ -238,7 +244,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
     updateEntry.mutate(
       {
         id: entry.id,
-        input: { timestamp, text: trimmed, mood: draftMood },
+        input: { timestamp, text: trimmed, moods: draftMoods },
       },
       {
         onSuccess: () => setEditing(false),
@@ -253,7 +259,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
         <div className="w-28">
           <Input type="time" value={draftTime} onChange={(e) => setDraftTime(e.target.value)} />
         </div>
-        <MoodPicker value={draftMood} onChange={setDraftMood} />
+        <MoodPicker value={draftMoods} onChange={setDraftMoods} />
         <Button variant="ghost" size="icon" onClick={save} aria-label="Speichern">
           <Check className="size-4" />
         </Button>

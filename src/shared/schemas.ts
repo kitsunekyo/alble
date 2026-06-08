@@ -48,7 +48,7 @@ export interface SessionDTO {
 export const createJournalEntrySchema = z.object({
   timestamp: z.string(),
   text: z.string().min(1).max(2000),
-  mood: z.enum(MOOD_KEYS).nullable().optional(),
+  moods: z.array(z.enum(MOOD_KEYS)).optional().default([]),
 });
 export type CreateJournalEntryInput = z.infer<typeof createJournalEntrySchema>;
 
@@ -59,6 +59,6 @@ export interface JournalEntryDTO {
   id: number;
   timestamp: string;
   text: string;
-  mood: Mood | null;
+  moods: Mood[];
   created_at: number;
 }

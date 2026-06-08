@@ -40,7 +40,7 @@ export const journalEntries = sqliteTable("journal_entries", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   timestamp: text("timestamp").notNull(),
   text: text("text").notNull(),
-  mood: text("mood"),
+  moods: text("moods"),
   created_at: integer("created_at").notNull(),
 });
 
