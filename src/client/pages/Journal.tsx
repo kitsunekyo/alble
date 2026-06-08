@@ -182,19 +182,10 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
       .filter((v): v is NonNullable<typeof v> => !!v);
     return (
       <Card className="p-3 space-y-2">
-        <div className="flex items-start gap-2">
-          <div className="text-sm tabular-nums text-muted-foreground shrink-0 pt-0.5">
+        <div className="flex items-center gap-2">
+          <div className="text-sm tabular-nums text-muted-foreground shrink-0">
             {extractTime(entry.timestamp)}
           </div>
-          {moodInfos.length > 0 && (
-            <div className="flex flex-wrap gap-1 shrink-0 pt-0.5">
-              {moodInfos.map((mi) => (
-                <span key={mi.key} className="text-xs text-muted-foreground">
-                  {mi.emoji}&nbsp;{mi.label}
-                </span>
-              ))}
-            </div>
-          )}
           <div className="flex-1" />
           <div className="flex shrink-0 -my-1">
             <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
@@ -232,6 +223,15 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
         <div>
           <p className="text-sm whitespace-pre-wrap">{entry.text}</p>
         </div>
+        {moodInfos.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {moodInfos.map((mi) => (
+              <span key={mi.key} className="text-xs text-muted-foreground">
+                {mi.emoji}&nbsp;{mi.label}
+              </span>
+            ))}
+          </div>
+        )}
       </Card>
     );
   }
