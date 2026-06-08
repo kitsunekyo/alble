@@ -6,6 +6,8 @@ export const MOODS = [
   { key: "ängstlich", emoji: "😰", label: "Ängstlich" },
   { key: "reaktiv", emoji: "😤", label: "Reaktiv" },
   { key: "neutral", emoji: "😐", label: "Neutral" },
+  { key: "hundekontakt", emoji: "🐶", label: "Hundekontakt" },
+  { key: "freilauf", emoji: "🐕", label: "Freilauf" },
 ] as const;
 
 export type Mood = (typeof MOODS)[number]["key"];
