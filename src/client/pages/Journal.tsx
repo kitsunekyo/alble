@@ -181,53 +181,56 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
       .map((m) => MOOD_MAP[m])
       .filter((v): v is NonNullable<typeof v> => !!v);
     return (
-      <Card className="p-3 flex items-start gap-3">
-        <div className="text-sm tabular-nums text-muted-foreground w-12 shrink-0 pt-0.5">
-          {extractTime(entry.timestamp)}
-        </div>
-        {moodInfos.length > 0 && (
-          <div className="flex flex-wrap gap-1 shrink-0 pt-0.5">
-            {moodInfos.map((mi) => (
-              <span key={mi.key} className="text-xs text-muted-foreground">
-                {mi.emoji}&nbsp;{mi.label}
-              </span>
-            ))}
+      <Card className="p-3 space-y-2">
+        <div className="flex items-start gap-2">
+          <div className="text-sm tabular-nums text-muted-foreground shrink-0 pt-0.5">
+            {extractTime(entry.timestamp)}
           </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm whitespace-pre-wrap">{entry.text}</p>
+          {moodInfos.length > 0 && (
+            <div className="flex flex-wrap gap-1 shrink-0 pt-0.5">
+              {moodInfos.map((mi) => (
+                <span key={mi.key} className="text-xs text-muted-foreground">
+                  {mi.emoji}&nbsp;{mi.label}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="flex-1" />
+          <div className="flex shrink-0 -my-1">
+            <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
+              <Pencil className="size-4" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Löschen">
+                  <Trash2 className="size-4 text-destructive" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Eintrag löschen?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Dieser Tagebucheintrag wird endgültig entfernt.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() =>
+                      deleteEntry.mutate(entry.id, {
+                        onError: (e) => toast.error(e.message),
+                      })
+                    }
+                  >
+                    Löschen
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
-        <div className="flex shrink-0 -my-1">
-          <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
-            <Pencil className="size-4" />
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Löschen">
-                <Trash2 className="size-4 text-destructive" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Eintrag löschen?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Dieser Tagebucheintrag wird endgültig entfernt.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() =>
-                    deleteEntry.mutate(entry.id, {
-                      onError: (e) => toast.error(e.message),
-                    })
-                  }
-                >
-                  Löschen
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        <div>
+          <p className="text-sm whitespace-pre-wrap">{entry.text}</p>
         </div>
       </Card>
     );
