@@ -12,7 +12,7 @@ import { MoodPicker } from "@/client/components/MoodPicker";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
-import { Input } from "@/client/components/ui/input";
+import { TimeInput } from "@/client/components/TimeInput";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -136,9 +136,7 @@ export function Journal() {
           />
           <MoodPicker value={mood} onChange={setMood} />
           <div className="flex gap-2 items-end">
-            <div className="w-28">
-              <Input type="time" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
-            </div>
+            <TimeInput value={timeInput} onChange={setTimeInput} className="w-28" />
             <Button onClick={submit} disabled={addEntry.isPending}>
               {addEntry.isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
             </Button>
@@ -250,9 +248,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   return (
     <Card className="p-3 space-y-3">
       <div className="flex items-end gap-2">
-        <div className="w-28">
-          <Input type="time" value={draftTime} onChange={(e) => setDraftTime(e.target.value)} />
-        </div>
+        <TimeInput value={draftTime} onChange={setDraftTime} className="w-28" />
         <MoodPicker value={draftMood} onChange={setDraftMood} />
         <Button variant="ghost" size="icon" onClick={save} aria-label="Speichern">
           <Check className="size-4" />

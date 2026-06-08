@@ -26,6 +26,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@libsql/client@0.17.3)
+      flatpickr:
+        specifier: ^4.6.13
+        version: 4.6.13
       lucide-react:
         specifier: ^1.14.0
         version: 1.14.0(react@19.2.6)
@@ -69,6 +72,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.3.0
         version: 4.3.0
+      '@types/flatpickr':
+        specifier: ^3.1.4
+        version: 3.1.4
       '@types/node':
         specifier: ^25.6.0
         version: 25.7.0
@@ -1669,6 +1675,10 @@ packages:
   '@types/d3-timer@3.0.2':
     resolution: {integrity: sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw==}
 
+  '@types/flatpickr@3.1.4':
+    resolution: {integrity: sha512-czk8lydTB2qzWBqI6gproY594pg+iEfpHQyrvnyMnMKxvD+2qbrs1g2F8KiWZK173jQMw2C7O9lFjiKeBNub+A==}
+    deprecated: This is a stub types definition. flatpickr provides its own type definitions, so you do not need this installed.
+
   '@types/node@25.7.0':
     resolution: {integrity: sha512-z+pdZyxE+RTQE9AcboAZCb4otwcrvgHD+GlBpPgn0emDVt0ohrTMhAwlr2Wd9nZ+nihhYFxO2pThz3C5qSu2Eg==}
 
@@ -1892,6 +1902,9 @@ packages:
 
   eventemitter3@5.0.4:
     resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
+
+  flatpickr@4.6.13:
+    resolution: {integrity: sha512-97PMG/aywoYpB4IvbvUJi0RQi8vearvU0oov1WW3k0WZPBMrTQVqekSX5CjSG/M4Q3i6A/0FKXC7RyAoAUUSPw==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -3600,6 +3613,10 @@ snapshots:
 
   '@types/d3-timer@3.0.2': {}
 
+  '@types/flatpickr@3.1.4':
+    dependencies:
+      flatpickr: 4.6.13
+
   '@types/node@25.7.0':
     dependencies:
       undici-types: 7.21.0
@@ -3786,6 +3803,8 @@ snapshots:
       '@esbuild/win32-x64': 0.27.7
 
   eventemitter3@5.0.4: {}
+
+  flatpickr@4.6.13: {}
 
   fsevents@2.3.3:
     optional: true
