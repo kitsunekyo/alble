@@ -1,5 +1,5 @@
 import { db } from "./db/client";
-import { sessions, steps, type SessionRow, type StepRow } from "./db/schema";
+import { sessions, steps, journalEntries, type SessionRow, type StepRow, type JournalEntryRow } from "./db/schema";
 import { and, asc, desc, eq, isNotNull, max, sql } from "drizzle-orm";
 import type { Rating } from "../shared/ratings";
 import { todayIsoString } from "../shared/dates";
@@ -10,7 +10,11 @@ import type {
   UpdateStepInput,
   SessionDTO,
   StepDTO,
+  CreateJournalEntryInput,
+  UpdateJournalEntryInput,
+  JournalEntryDTO,
 } from "../shared/schemas";
+import type { Mood } from "../shared/journal";
 
 function toStepDTO(row: StepRow): StepDTO {
   return {
@@ -274,4 +278,59 @@ export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number;
   });
 
   return { sessions: sessionsCreated, steps: stepsCreated, skipped };
+}
+
+function toJournalEntryDTO(row: JournalEntryRow): JournalEntryDTO {
+  return {
+    id: row.id,
+    timestamp: row.timestamp,
+    text: row.text,
+    mood: (row.mood as Mood) ?? null,
+    created_at: row.created_at,
+  };
+}
+
+export async function listJournalEntries(): Promise<JournalEntryDTO[]> {
+  const rows = await db.select().from(journalEntries).orderBy(desc(journalEntries.timestamp)).all();
+  return rows.map(toJournalEntryDTO);
+}
+
+export async function getJournalEntry(id: number): Promise<JournalEntryDTO | null> {
+  const row = await db.select().from(journalEntries).where(eq(journalEntries.id, id)).get();
+  if (!row) return null;
+  return toJournalEntryDTO(row);
+}
+
+export async function createJournalEntry(input: CreateJournalEntryInput): Promise<JournalEntryDTO> {
+  const created = await db
+    .insert(journalEntries)
+    .values({
+      timestamp: input.timestamp,
+      text: input.text,
+      mood: input.mood ?? null,
+      created_at: Date.now(),
+    })
+    .returning()
+    .get();
+  return toJournalEntryDTO(created);
+}
+
+export async function updateJournalEntry(id: number, input: UpdateJournalEntryInput): Promise<JournalEntryDTO | null> {
+  const existing = await db.select().from(journalEntries).where(eq(journalEntries.id, id)).get();
+  if (!existing) return null;
+  const patch: Partial<JournalEntryRow> = {};
+  if (input.timestamp !== undefined) patch.timestamp = input.timestamp;
+  if (input.text !== undefined) patch.text = input.text;
+  if ("mood" in input) patch.mood = input.mood ?? null;
+  if (Object.keys(patch).length === 0) return toJournalEntryDTO(existing);
+  await db.update(journalEntries).set(patch).where(eq(journalEntries.id, id)).run();
+  const updated = await db.select().from(journalEntries).where(eq(journalEntries.id, id)).get();
+  return updated ? toJournalEntryDTO(updated) : null;
+}
+
+export async function deleteJournalEntry(id: number): Promise<boolean> {
+  const existing = await db.select({ id: journalEntries.id }).from(journalEntries).where(eq(journalEntries.id, id)).get();
+  if (!existing) return false;
+  await db.delete(journalEntries).where(eq(journalEntries.id, id)).run();
+  return true;
 }

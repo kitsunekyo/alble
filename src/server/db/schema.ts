@@ -36,5 +36,14 @@ export const authSessions = sqliteTable("auth_sessions", {
   expiresAt: integer("expires_at").notNull(),
 });
 
+export const journalEntries = sqliteTable("journal_entries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  timestamp: text("timestamp").notNull(),
+  text: text("text").notNull(),
+  mood: text("mood"),
+  created_at: integer("created_at").notNull(),
+});
+
 export type SessionRow = typeof sessions.$inferSelect;
 export type StepRow = typeof steps.$inferSelect;
+export type JournalEntryRow = typeof journalEntries.$inferSelect;

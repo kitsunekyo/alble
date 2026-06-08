@@ -4,6 +4,8 @@ import {
   updateSessionSchema,
   createStepSchema,
   updateStepSchema,
+  createJournalEntrySchema,
+  updateJournalEntrySchema,
 } from "../shared/schemas";
 import * as repo from "./repo";
 import { parseCsv, rowsToCsv } from "./csv";
@@ -271,6 +273,41 @@ export const apiRoutes = {
         return json({ error: "Current password is incorrect" }, { status: 403 });
       }
       return json({ ok: true });
+    },
+  },
+
+  "/api/journal": {
+    GET: async () => json(await repo.listJournalEntries()),
+    POST: async (req: Request) => {
+      const r = await readJson(req, createJournalEntrySchema);
+      if (!r.ok) return r.res;
+      return json(await repo.createJournalEntry(r.data), { status: 201 });
+    },
+  },
+
+  "/api/journal/:id": {
+    GET: async (req: RouteRequest) => {
+      const id = parseId(req.params.id);
+      if (id === null) return badRequest("Invalid id");
+      const entry = await repo.getJournalEntry(id);
+      if (!entry) return notFound();
+      return json(entry);
+    },
+    PATCH: async (req: RouteRequest) => {
+      const id = parseId(req.params.id);
+      if (id === null) return badRequest("Invalid id");
+      const r = await readJson(req, updateJournalEntrySchema);
+      if (!r.ok) return r.res;
+      const updated = await repo.updateJournalEntry(id, r.data);
+      if (!updated) return notFound();
+      return json(updated);
+    },
+    DELETE: async (req: RouteRequest) => {
+      const id = parseId(req.params.id);
+      if (id === null) return badRequest("Invalid id");
+      const ok = await repo.deleteJournalEntry(id);
+      if (!ok) return notFound();
+      return new Response(null, { status: 204 });
     },
   },
 } as const;

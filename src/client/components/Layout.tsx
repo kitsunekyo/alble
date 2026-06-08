@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarClock, History, BarChart3, Settings as SettingsIcon } from "lucide-react";
+import { CalendarClock, History, BarChart3, Settings as SettingsIcon, BookOpen } from "lucide-react";
 import { ThemeToggle } from "@/client/components/ThemeToggle";
 import { cn } from "@/client/lib/utils";
 
@@ -10,6 +10,7 @@ const navItems = [
   { to: "/", label: "Heute", icon: CalendarClock, end: true },
   { to: "/history", label: "Verlauf", icon: History },
   { to: "/charts", label: "Charts", icon: BarChart3 },
+  { to: "/journal", label: "Tagebuch", icon: BookOpen },
   { to: "/settings", label: "Einstellungen", icon: SettingsIcon },
 ];
 
@@ -50,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (

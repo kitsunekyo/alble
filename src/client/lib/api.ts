@@ -5,6 +5,9 @@ import type {
   UpdateStepInput,
   SessionDTO,
   StepDTO,
+  CreateJournalEntryInput,
+  UpdateJournalEntryInput,
+  JournalEntryDTO,
 } from "@/shared/schemas";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -71,4 +74,14 @@ export const api = {
     });
   },
   wipe: () => request<void>("/api/wipe", { method: "POST" }),
+  journal: {
+    list: () => request<JournalEntryDTO[]>("/api/journal"),
+    get: (id: number) => request<JournalEntryDTO>(`/api/journal/${id}`),
+    create: (input: CreateJournalEntryInput) =>
+      request<JournalEntryDTO>("/api/journal", { method: "POST", body: JSON.stringify(input) }),
+    update: (id: number, input: UpdateJournalEntryInput) =>
+      request<JournalEntryDTO>(`/api/journal/${id}`, { method: "PATCH", body: JSON.stringify(input) }),
+    delete: (id: number) =>
+      request<void>(`/api/journal/${id}`, { method: "DELETE" }),
+  },
 };
