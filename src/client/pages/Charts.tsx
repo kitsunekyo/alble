@@ -140,13 +140,18 @@ export function Charts() {
     const current = compute(inRange);
     const prior = compute(inPrev);
 
+    const safePct = (curr: number, prev: number) => {
+      if (prev === 0) return curr === 0 ? 0 : 100;
+      return Math.round(((curr - prev) / prev) * 100);
+    };
+
     return {
       sessionCount: current.count,
-      sessionCountDelta: current.count - prior.count,
+      sessionCountDelta: safePct(current.count, prior.count),
       totalDuration: current.duration,
-      totalDurationDelta: current.duration - prior.duration,
+      totalDurationDelta: safePct(current.duration, prior.duration),
       avgScore: current.avgScore,
-      avgScoreDelta: current.avgScore - prior.avgScore,
+      avgScoreDelta: Math.round((current.avgScore - prior.avgScore) * 10) / 10,
       bestWeek: bestWeek(inRange),
     };
   }, [sessions.data, activeRatings, dateRange]);

@@ -10,15 +10,15 @@ export function StatsSummary({ stats }: { stats: StatsData }) {
       <Card className="p-4">
         <div className="text-xs text-muted-foreground mb-1">Sitzungen</div>
         <div className="text-2xl font-semibold tabular-nums">{stats.sessionCount}</div>
-        <div className="text-xs mt-1" style={{ color: formatDelta(stats.sessionCountDelta, "").color }}>
-          {formatDelta(stats.sessionCountDelta, "").text} (vs. Vorperiode)
+        <div className="text-xs mt-1" style={{ color: formatDelta(stats.sessionCountDelta, "%").color }}>
+          {formatDelta(stats.sessionCountDelta, "%").text} (vs. Vorperiode)
         </div>
       </Card>
       <Card className="p-4">
         <div className="text-xs text-muted-foreground mb-1">Gesamtzeit</div>
         <div className="text-2xl font-semibold tabular-nums">{formatDuration(stats.totalDuration)}</div>
-        <div className="text-xs mt-1" style={{ color: formatDelta(stats.totalDurationDelta / 3600, "h").color }}>
-          {formatDelta(Math.round(stats.totalDurationDelta / 360) / 10, "h").text} (vs. Vorperiode)
+        <div className="text-xs mt-1" style={{ color: formatDelta(stats.totalDurationDelta, "%").color }}>
+          {formatDelta(stats.totalDurationDelta, "%").text} (vs. Vorperiode)
         </div>
       </Card>
       <Card className="p-4">
