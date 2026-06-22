@@ -232,7 +232,9 @@ export function Charts() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ScatterOverTime scatterByRating={data.scatterByRating} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
           <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
-          <CorrelationChart daily={data.daily} selection={selection} onSelect={setSelection} />
+          <div className="lg:col-span-2">
+            <CorrelationChart daily={data.daily} selection={selection} onSelect={setSelection} />
+          </div>
           <div className="lg:col-span-2">
             <StripDistribution stripByRating={data.stripByRating} ratingStats={data.ratingStats} />
           </div>
