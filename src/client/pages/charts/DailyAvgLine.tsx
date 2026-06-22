@@ -56,7 +56,7 @@ export const DailyAvgLine = React.memo(function DailyAvgLine({ daily, selection,
             <Tooltip
               contentStyle={COMMON_TOOLTIP_STYLE}
               labelFormatter={(label) => formatTimestampDate(Number(label))}
-              formatter={(v) => [formatDuration(Number(v)), "⌀ Dauer"]}
+              formatter={(v, name) => [formatDuration(Number(v)), name === "avg" ? "⌀ Dauer" : name]}
             />
             {weekHighlight && (
               <ReferenceArea x1={weekHighlight.x1} x2={weekHighlight.x2} fill="var(--color-chart-1)" fillOpacity={0.08} />
