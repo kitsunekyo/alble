@@ -9,8 +9,7 @@ import { parseDuration, buildData, type DateRange, type SelectionState } from ".
 import { StatsSummary } from "./charts/StatsSummary";
 import { ScatterOverTime } from "./charts/ScatterOverTime";
 import { WeeklyDistribution } from "./charts/WeeklyDistribution";
-import { DailyAvgLine } from "./charts/DailyAvgLine";
-import { RatingScoreTrend } from "./charts/RatingScoreTrend";
+import { CorrelationChart } from "./charts/CorrelationChart";
 import { StripDistribution } from "./charts/StripDistribution";
 
 export function Charts() {
@@ -232,9 +231,8 @@ export function Charts() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ScatterOverTime scatterByRating={data.scatterByRating} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
-          <DailyAvgLine daily={data.daily} selection={selection} onSelect={setSelection} />
           <WeeklyDistribution weekly={data.weekly} activeRatings={activeRatings} selection={selection} onSelect={setSelection} />
-          <RatingScoreTrend scoreDaily={data.scoreDaily} selection={selection} onSelect={setSelection} />
+          <CorrelationChart daily={data.daily} selection={selection} onSelect={setSelection} />
           <div className="lg:col-span-2">
             <StripDistribution stripByRating={data.stripByRating} ratingStats={data.ratingStats} />
           </div>

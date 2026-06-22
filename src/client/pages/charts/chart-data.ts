@@ -248,6 +248,16 @@ export function buildData(sessions: SessionDTO[], activeRatings: Set<Rating>): B
     scoreDaily[i]!.ma7_score = maScoreValues[i]!;
   }
 
+  // Merge score data into daily points by date so both series share the same x-axis array
+  const scoreDailyByDate = new Map(scoreDaily.map(d => [d.date, d]));
+  for (const d of daily) {
+    const s = scoreDailyByDate.get(d.date);
+    if (s) {
+      d.score = s.score;
+      d.ma7_score = s.ma7_score;
+    }
+  }
+
   scatter.sort((a, b) => a.x - b.x);
 
   const ratingStats: Record<Rating, RatingStats> = {
