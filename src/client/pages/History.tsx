@@ -14,9 +14,10 @@ import {
 } from "@/client/hooks/use-sessions";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
-import { Input } from "@/client/components/ui/input";
 import { Textarea } from "@/client/components/ui/textarea";
 import { Badge } from "@/client/components/ui/badge";
+import { DatePicker } from "@/client/components/DatePicker";
+import { PageTitle } from "@/client/components/PageTitle";
 import {
   DurationInput,
   durationPartsToSeconds,
@@ -110,7 +111,7 @@ export function History() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 space-y-6">
-      <h1 className="text-2xl font-semibold">Verlauf</h1>
+      <PageTitle>Verlauf</PageTitle>
 
       <DateEntryForm />
 
@@ -189,10 +190,9 @@ function DateEntryForm() {
     <Card className="p-4">
       <div className="flex items-center gap-2 mb-4">
         <label className="text-sm text-muted-foreground">Datum</label>
-        <Input
-          type="date"
+        <DatePicker
           value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
+          onChange={(v) => v && setSelectedDate(v)}
           className="w-auto"
         />
         {session.data ? (
@@ -456,7 +456,11 @@ function SessionMetaEditor({
     <div className="space-y-2">
       <div className="flex gap-2 items-center">
         <label className="text-sm w-16">Datum</label>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <DatePicker
+          value={date === "" ? null : date}
+          onChange={(v) => setDate(v ?? "")}
+          className="flex-1"
+        />
       </div>
       <div className="flex gap-2 items-start">
         <label className="text-sm w-16 mt-2">Notizen</label>

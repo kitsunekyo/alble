@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/client/lib/theme";
 import { Loader2, Upload, Download, Trash2, KeyRound, Eye, EyeOff, Sun, Moon, Monitor } from "lucide-react";
 import { useImportCsv, useWipe, useSessions } from "@/client/hooks/use-sessions";
+import { PageTitle } from "@/client/components/PageTitle";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Input } from "@/client/components/ui/input";
@@ -59,7 +60,7 @@ export function Settings() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 space-y-4">
-      <h1 className="text-2xl font-semibold">Einstellungen</h1>
+      <PageTitle>Einstellungen</PageTitle>
 
       <Card className="p-4 space-y-3">
         <div>

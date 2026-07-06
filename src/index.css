@@ -98,6 +98,10 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply text-foreground antialiased;
   }
+}
+
+body {
+  background: linear-gradient(to bottom, #fbf0ef, #f7ecdb) fixed;
 }

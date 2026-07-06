@@ -5,6 +5,7 @@ import { Loader2, Trash2, Pencil, Check, X } from "lucide-react";
 import { useTodaySession, useAddStep, useAddTodayStep, useDeleteStep, useUpdateStep } from "@/client/hooks/use-sessions";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
+import { PageTitle } from "@/client/components/PageTitle";
 import { Textarea } from "@/client/components/ui/textarea";
 import { RatingPicker } from "@/client/components/RatingPicker";
 import {
@@ -75,22 +76,23 @@ export function Today() {
     }
 
     return (
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8">
-        <div className="mb-4">
-          <h1 className="text-2xl font-semibold">Heute</h1>
-          <p className="text-sm text-muted-foreground">
-            {dateLabel} · {weekLabel} · 0 Einheiten
-          </p>
-        </div>
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8 space-y-4">
+        <PageTitle
+          content={
+            <p>{dateLabel} · {weekLabel} · 0 Einheiten</p>
+          }
+        >
+          Heute
+        </PageTitle>
 
-        <div className="space-y-2 mb-6">
+        <div className="space-y-2">
           <Card className="p-6 text-center text-muted-foreground text-sm">
             Noch keine Einheit erfasst. Füge unten die erste hinzu.
           </Card>
         </div>
 
-        <Card className="p-4 md:rounded-xl md:border bg-background">
-          <div className="max-w-2xl mx-auto space-y-3">
+        <Card className="p-4">
+          <div className="space-y-3">
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <DurationInput value={duration} onChange={setDuration} onEnter={submitToday} />
@@ -144,16 +146,19 @@ export function Today() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold">Heute</h1>
-        <p className="text-sm text-muted-foreground">
-          {dateLabel ? `${dateLabel} · ${weekLabel}` : `Trainingstag ${s.global_day}`} ·{" "}
-          {s.steps.length} Einheit{s.steps.length === 1 ? "" : "en"}
-        </p>
-      </div>
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8 space-y-4">
+      <PageTitle
+        content={
+          <p>
+            {dateLabel ? `${dateLabel} · ${weekLabel}` : `Trainingstag ${s.global_day}`} ·{" "}
+            {s.steps.length} Einheit{s.steps.length === 1 ? "" : "en"}
+          </p>
+        }
+      >
+        Heute
+      </PageTitle>
 
-      <div className="space-y-2 mb-6">
+      <div className="space-y-2">
         {s.steps.length === 0 ? (
           <Card className="p-6 text-center text-muted-foreground text-sm">
             Noch keine Einheit erfasst. Füge unten die erste hinzu.
@@ -173,8 +178,8 @@ export function Today() {
         )}
       </div>
 
-      <Card className="p-4 md:rounded-xl md:border bg-background">
-        <div className="max-w-2xl mx-auto space-y-3">
+      <Card className="p-4">
+        <div className="space-y-3">
           <div className="flex gap-2 items-end">
             <div className="flex-1">
               <DurationInput value={duration} onChange={setDuration} onEnter={submit} />

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useSessions } from "@/client/hooks/use-sessions";
+import { PageTitle } from "@/client/components/PageTitle";
 import { RATINGS, RATING_COLORS, RATING_SCORE, type Rating } from "@/shared/ratings";
 import { dateToIsoString, getCalendarWeek, parseIsoDate } from "@/shared/dates";
 import { parseDuration, buildData, type DateRange, type SelectionState } from "./charts/chart-data";
@@ -172,10 +173,30 @@ export function Charts() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-4 pb-8">
-      <h1 className="text-2xl font-semibold mb-4">Charts</h1>
+    <div className="max-w-5xl mx-auto px-4 pt-4 pb-8 space-y-4">
+      <PageTitle>Charts</PageTitle>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex gap-2">
+        {(["7d", "30d", "90d", "all"] as const).map((preset) => {
+          const labels: Record<DateRange, string> = { "7d": "7 Tage", "30d": "30 Tage", "90d": "90 Tage", "all": "Alle" };
+          const isActive = dateRange === preset;
+          return (
+            <button
+              key={preset}
+              onClick={() => setDateRange(preset)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors border ${
+                isActive
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "text-muted-foreground border-border bg-transparent hover:bg-muted"
+              }`}
+            >
+              {labels[preset]}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
         {RATINGS.map((rating) => {
           const isActive = activeRatings.has(rating);
           return (
@@ -197,26 +218,6 @@ export function Charts() {
               style={isActive ? { backgroundColor: RATING_COLORS[rating] } : undefined}
             >
               {rating}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex gap-2 mb-4">
-        {(["7d", "30d", "90d", "all"] as const).map((preset) => {
-          const labels: Record<DateRange, string> = { "7d": "7 Tage", "30d": "30 Tage", "90d": "90 Tage", "all": "Alle" };
-          const isActive = dateRange === preset;
-          return (
-            <button
-              key={preset}
-              onClick={() => setDateRange(preset)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors border ${
-                isActive
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "text-muted-foreground border-border bg-transparent hover:bg-muted"
-              }`}
-            >
-              {labels[preset]}
             </button>
           );
         })}

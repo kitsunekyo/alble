@@ -17,8 +17,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background">
-      <header className="hidden md:flex items-center justify-between border-b px-6 py-3">
+    <div className="min-h-dvh flex flex-col">
+      <header className="hidden md:flex items-center justify-between border-b bg-background px-6 py-3">
         <div className="flex items-center gap-3">
           <span className="text-lg font-semibold">Alble</span>
           <span className="text-muted-foreground text-sm">Allein-Bleib-Training</span>
@@ -53,7 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
-      <header className="md:hidden sticky top-0 bg-background border-b z-30 flex items-center justify-end px-4 py-2 gap-1">
+      <header className="md:hidden sticky top-0 bg-background/80 backdrop-blur border-b z-30 flex items-center justify-end px-4 py-2 gap-1 shadow-sm">
         <Link
           href="/settings"
           className={cn(
@@ -72,7 +72,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-40"
+        className="md:hidden fixed bottom-0 inset-x-0 bg-background/80 backdrop-blur border-t z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="grid grid-cols-4">

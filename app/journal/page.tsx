@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { Journal } from "@/client/pages/Journal";
 
 export default function JournalPage() {
-  return <Journal />;
+  return (
+    <Suspense>
+      <Journal />
+    </Suspense>
+  );
 }
