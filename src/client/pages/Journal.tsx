@@ -2,7 +2,16 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Loader2, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+} from "lucide-react";
 import {
   useJournalEntries,
   useAddJournalEntry,
@@ -24,8 +33,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/client/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/client/components/ui/dropdown-menu";
 import { extractTags } from "@/shared/journal";
 import type { JournalEntryDTO } from "@/shared/schemas";
 import { todayIsoString, parseIsoDate, formatDate, formatWeekday } from "@/shared/dates";
@@ -153,6 +167,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   const [editing, setEditing] = useState(false);
   const [draftText, setDraftText] = useState(entry.text);
   const [draftTime, setDraftTime] = useState(extractTime(entry.timestamp));
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (!editing) {
     return (
@@ -162,38 +177,29 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
             {extractTime(entry.timestamp)}
           </div>
           <div className="flex-1" />
-          <div className="flex shrink-0 -my-1">
-            <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Bearbeiten">
-              <Pencil className="size-4" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Löschen">
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Eintrag löschen?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Dieser Tagebucheintrag wird endgültig entfernt.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() =>
-                      deleteEntry.mutate(entry.id, {
-                        onError: (e) => toast.error(e.message),
-                      })
-                    }
-                  >
-                    Löschen
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Aktionen" className="-my-1">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setEditing(true)}>
+                <Pencil />
+                Bearbeiten
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setDeleteOpen(true);
+                }}
+              >
+                <Trash2 />
+                Löschen
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div>
           <p className="text-sm whitespace-pre-wrap">{entry.text}</p>
@@ -207,6 +213,28 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
             ))}
           </div>
         )}
+        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Eintrag löschen?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Dieser Tagebucheintrag wird endgültig entfernt.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() =>
+                  deleteEntry.mutate(entry.id, {
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
+              >
+                Löschen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </Card>
     );
   }
