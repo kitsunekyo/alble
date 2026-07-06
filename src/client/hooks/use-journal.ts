@@ -6,8 +6,11 @@ const KEYS = {
   all: ["journal"] as const,
 };
 
-export function useJournalEntries() {
-  return useQuery({ queryKey: KEYS.all, queryFn: api.journal.list });
+export function useJournalEntries(days?: number, offset?: number) {
+  return useQuery({
+    queryKey: [...KEYS.all, { days, offset }],
+    queryFn: () => api.journal.list({ days, offset }),
+  });
 }
 
 function useInvalidateAll() {

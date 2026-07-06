@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Loader2, Trash2, Pencil, Check, X } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Loader2, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   useJournalEntries,
   useAddJournalEntry,
@@ -13,6 +14,7 @@ import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
 import { Input } from "@/client/components/ui/input";
+import { PageTitle } from "@/client/components/PageTitle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,9 +52,27 @@ function getDateLabel(dateStr: string): string {
   return `${formatWeekday(dateStr)}, ${formatDate(dateStr)}`;
 }
 
+const PAGE_SIZE = 14;
+
 export function Journal() {
-  const entries = useJournalEntries();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const page = parseInt(searchParams.get("page") ?? "1", 10);
+  const offset = (page - 1) * PAGE_SIZE;
+  const entries = useJournalEntries(PAGE_SIZE, offset);
   const addEntry = useAddJournalEntry();
+
+  function setPage(p: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (p <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(p));
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }
 
   const now = new Date();
   const currentHH = String(now.getHours()).padStart(2, "0");
@@ -120,12 +140,10 @@ export function Journal() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold">Tagebuch</h1>
-      </div>
+    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8 space-y-4">
+      <PageTitle>Tagebuch</PageTitle>
 
-      <Card className="p-4 mb-6 bg-background">
+      <Card className="p-4">
         <div className="space-y-3">
           <Textarea
             value={text}
@@ -148,7 +166,7 @@ export function Journal() {
 
       {grouped.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground text-sm">
-          Noch keine Tagebucheinträge.
+          {page > 1 ? "Keine Einträge in diesem Zeitraum." : "Noch keine Tagebucheinträge."}
         </Card>
       ) : (
         grouped.map(([dateKey, dateEntries]) => (
@@ -164,6 +182,16 @@ export function Journal() {
           </div>
         ))
       )}
+
+      <div className="flex items-center justify-center gap-4 pt-2">
+        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+          <ChevronLeft className="size-4 mr-1" /> Neuere
+        </Button>
+        <span className="text-sm text-muted-foreground tabular-nums">Seite {page}</span>
+        <Button variant="outline" size="sm" onClick={() => setPage(page + 1)}>
+          Ältere <ChevronRight className="size-4 ml-1" />
+        </Button>
+      </div>
     </div>
   );
 }

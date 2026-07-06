@@ -75,7 +75,13 @@ export const api = {
   },
   wipe: () => request<void>("/api/wipe", { method: "POST" }),
   journal: {
-    list: () => request<JournalEntryDTO[]>("/api/journal"),
+    list: (params?: { days?: number; offset?: number }) => {
+      const qp = params ? new URLSearchParams() : undefined;
+      if (params?.days) qp!.set("days", String(params.days));
+      if (params?.offset) qp!.set("offset", String(params.offset));
+      const qs = qp ? `?${qp.toString()}` : "";
+      return request<JournalEntryDTO[]>(`/api/journal${qs}`);
+    },
     get: (id: number) => request<JournalEntryDTO>(`/api/journal/${id}`),
     create: (input: CreateJournalEntryInput) =>
       request<JournalEntryDTO>("/api/journal", { method: "POST", body: JSON.stringify(input) }),

@@ -277,7 +277,14 @@ export const apiRoutes = {
   },
 
   "/api/journal": {
-    GET: async () => json(await repo.listJournalEntries()),
+    GET: async (req: Request) => {
+      const url = new URL(req.url);
+      const daysRaw = url.searchParams.get("days");
+      const offsetRaw = url.searchParams.get("offset");
+      const days = daysRaw ? parseInt(daysRaw, 10) : undefined;
+      const offset = offsetRaw ? parseInt(offsetRaw, 10) : undefined;
+      return json(await repo.listJournalEntries(days, offset));
+    },
     POST: async (req: Request) => {
       const r = await readJson(req, createJournalEntrySchema);
       if (!r.ok) return r.res;

@@ -1,8 +1,8 @@
 import { db } from "./db/client";
 import { sessions, steps, journalEntries, type SessionRow, type StepRow, type JournalEntryRow } from "./db/schema";
-import { and, asc, desc, eq, isNotNull, max, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, lt, max, sql } from "drizzle-orm";
 import type { Rating } from "../shared/ratings";
-import { todayIsoString } from "../shared/dates";
+import { todayIsoString, parseIsoDate, dateToIsoString } from "../shared/dates";
 import type {
   CreateSessionInput,
   UpdateSessionInput,
@@ -301,8 +301,32 @@ function toJournalEntryDTO(row: JournalEntryRow): JournalEntryDTO {
   };
 }
 
-export async function listJournalEntries(): Promise<JournalEntryDTO[]> {
-  const rows = await db.select().from(journalEntries).orderBy(desc(journalEntries.timestamp)).all();
+export async function listJournalEntries(days?: number, offsetDays?: number): Promise<JournalEntryDTO[]> {
+  const today = todayIsoString();
+  const offset = offsetDays ?? 0;
+  let conditions: ReturnType<typeof and> | undefined;
+
+  if (days !== undefined) {
+    const startDate = parseIsoDate(today);
+    startDate.setUTCDate(startDate.getUTCDate() - offset - days);
+    const startStr = dateToIsoString(startDate);
+
+    if (offset === 0) {
+      conditions = gte(journalEntries.timestamp, startStr);
+    } else {
+      const endDate = parseIsoDate(today);
+      endDate.setUTCDate(endDate.getUTCDate() - offset);
+      const endStr = dateToIsoString(endDate);
+      conditions = and(gte(journalEntries.timestamp, startStr), lt(journalEntries.timestamp, endStr));
+    }
+  }
+
+  const rows = await db
+    .select()
+    .from(journalEntries)
+    .where(conditions)
+    .orderBy(desc(journalEntries.timestamp))
+    .all();
   return rows.map(toJournalEntryDTO);
 }
 
