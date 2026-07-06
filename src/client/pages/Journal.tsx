@@ -166,7 +166,6 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   const deleteEntry = useDeleteJournalEntry();
   const [editing, setEditing] = useState(false);
   const [draftText, setDraftText] = useState(entry.text);
-  const [draftDate, setDraftDate] = useState(extractDate(entry.timestamp));
   const [draftTime, setDraftTime] = useState(extractTime(entry.timestamp));
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -246,7 +245,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
       toast.error("Text eingeben");
       return;
     }
-    const timestamp = `${draftDate}T${draftTime}:00`;
+    const timestamp = `${extractDate(entry.timestamp)}T${draftTime}:00`;
     updateEntry.mutate(
       {
         id: entry.id,
@@ -262,12 +261,6 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   return (
     <Card className="p-3 space-y-3">
       <div className="flex items-end gap-2">
-        <Input
-          type="date"
-          value={draftDate}
-          onChange={(e) => setDraftDate(e.target.value)}
-          className="flex-1"
-        />
         <Input
           type="time"
           value={draftTime}
