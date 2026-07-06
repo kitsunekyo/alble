@@ -50,9 +50,7 @@ export function JournalQuickEntry({
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
-      <div className="w-28">
-        <Input type="time" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
-      </div>
+      <Input type="time" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
 
       <Textarea
         value={text}

@@ -1,0 +1,71 @@
+{
+  "id": "/",
+  "name": "Alble - Allein-Bleib-Training",
+  "short_name": "Alble",
+  "description": "Trainingstagebuch fuer Allein-Bleib-Training mit Pina.",
+  "theme_color": "#fbf0ef",
+  "background_color": "#fbf0ef",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "browser"],
+  "orientation": "portrait",
+  "lang": "de",
+  "dir": "ltr",
+  "categories": ["lifestyle", "productivity"],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "handle_links": "preferred",
+  "shortcuts": [
+    {
+      "name": "Home",
+      "url": "/",
+      "description": "Training Uebersicht"
+    },
+    {
+      "name": "Verlauf",
+      "url": "/history",
+      "description": "Trainingsverlauf"
+    },
+    {
+      "name": "Journal",
+      "url": "/journal",
+      "description": "Journal"
+    },
+    {
+      "name": "Diagramme",
+      "url": "/charts",
+      "description": "Statistik und Diagramme"
+    },
+    {
+      "name": "Einstellungen",
+      "url": "/settings",
+      "description": "Einstellungen"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

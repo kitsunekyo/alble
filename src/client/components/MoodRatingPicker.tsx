@@ -36,7 +36,7 @@ export function MoodRatingPicker({ value, onChange, className }: MoodRatingPicke
             style={active ? { backgroundColor: BEIGE, borderColor: BEIGE } : undefined}
           >
             <span className="text-xl leading-none">{m.emoji}</span>
-            <span className="text-xs font-medium">{m.label}</span>
+            <span className="text-xs font-medium hidden md:block">{m.label}</span>
           </button>
         );
       })}

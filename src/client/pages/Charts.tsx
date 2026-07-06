@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useSessions } from "@/client/hooks/use-sessions";
-import { PageTitle } from "@/client/components/PageTitle";
 import { RATINGS, RATING_COLORS, RATING_SCORE, type Rating } from "@/shared/ratings";
 import { dateToIsoString, getCalendarWeek, parseIsoDate } from "@/shared/dates";
 import { parseDuration, buildData, type DateRange, type SelectionState } from "./charts/chart-data";
@@ -173,9 +172,7 @@ export function Charts() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-4 pb-8 space-y-4">
-      <PageTitle>Charts</PageTitle>
-
+    <div className="max-w-5xl mx-auto px-4 pt-2 pb-8 space-y-4">
       <div className="flex gap-2">
         {(["7d", "30d", "90d", "all"] as const).map((preset) => {
           const labels: Record<DateRange, string> = { "7d": "7 Tage", "30d": "30 Tage", "90d": "90 Tage", "all": "Alle" };

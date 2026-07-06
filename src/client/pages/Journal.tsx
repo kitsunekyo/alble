@@ -15,7 +15,6 @@ import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
 import { Input } from "@/client/components/ui/input";
 import { Badge } from "@/client/components/ui/badge";
-import { PageTitle } from "@/client/components/PageTitle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,9 +102,7 @@ export function Journal() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8 space-y-4">
-      <PageTitle>Tagebuch</PageTitle>
-
+    <div className="max-w-2xl mx-auto px-4 pt-2 pb-8 space-y-4">
       <Card className="p-4">
         <JournalQuickEntry
           submitting={addEntry.isPending}

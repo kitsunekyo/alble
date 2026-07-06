@@ -17,7 +17,6 @@ import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
 import { Badge } from "@/client/components/ui/badge";
 import { DatePicker } from "@/client/components/DatePicker";
-import { PageTitle } from "@/client/components/PageTitle";
 import {
   QuickDurationInput,
   parseDuration,
@@ -116,9 +115,7 @@ export function History() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 space-y-6">
-      <PageTitle>Verlauf</PageTitle>
-
+    <div className="max-w-2xl mx-auto px-4 pt-2 pb-8 space-y-6">
       <DateEntryForm />
 
       {grouped.map(({ key, label, items }) => (

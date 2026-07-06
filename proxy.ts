@@ -8,7 +8,13 @@ export function proxy(request: NextRequest) {
     pathname === "/login" ||
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
-    pathname === "/favicon.ico"
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.json" ||
+    pathname.startsWith("/serwist/") ||
+    pathname.startsWith("/pwa/") ||
+    pathname === "/~offline" ||
+    pathname === "/icon.png" ||
+    pathname === "/apple-icon.png"
   ) {
     return NextResponse.next();
   }

@@ -69,7 +69,7 @@ export function Home() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-6 pb-24 md:pb-8 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 pt-2 pb-8 space-y-6">
       <h1 className="text-3xl font-semibold tracking-tight">
         Wie gehts Pina heute?
       </h1>
@@ -93,7 +93,7 @@ export function Home() {
                   style={active ? { backgroundColor: BEIGE, borderColor: BEIGE } : undefined}
                 >
                   <span className="text-3xl leading-none">{m.emoji}</span>
-                  <span className="text-sm font-medium">{m.label}</span>
+                  <span className="text-sm font-medium hidden md:block">{m.label}</span>
                 </button>
               );
             })}
