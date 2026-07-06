@@ -6,8 +6,6 @@ import {
   Loader2,
   Trash2,
   Pencil,
-  Check,
-  X,
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
@@ -260,26 +258,28 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
 
   return (
     <Card className="p-3 space-y-3">
-      <div className="flex items-end gap-2">
-        <Input
-          type="time"
-          value={draftTime}
-          onChange={(e) => setDraftTime(e.target.value)}
-          className="flex-1"
-        />
-        <Button variant="ghost" size="icon" onClick={save} aria-label="Speichern">
-          <Check className="size-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => setEditing(false)} aria-label="Abbrechen">
-          <X className="size-4" />
-        </Button>
+      <div className="flex items-center">
+        <p className="text-sm font-medium">Eintrag bearbeiten</p>
       </div>
+      <Input
+        type="time"
+        value={draftTime}
+        onChange={(e) => setDraftTime(e.target.value)}
+      />
       <Textarea
         value={draftText}
         onChange={(e) => setDraftText(e.target.value)}
         className="min-h-20"
         maxLength={2000}
       />
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={() => setEditing(false)}>
+          Verwerfen
+        </Button>
+        <Button onClick={save} className="cursor-pointer">
+          Ändern
+        </Button>
+      </div>
     </Card>
   );
 }
