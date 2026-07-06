@@ -32,6 +32,7 @@ export function JournalQuickEntry({
   placeholder = "Was ist passiert? #tag",
 }: JournalQuickEntryProps) {
   const [text, setText] = useState("");
+  const [dateInput, setDateInput] = useState(todayIsoString());
   const [timeInput, setTimeInput] = useState(nowHHMM());
 
   const tags = useMemo(() => extractTags(text), [text]);
@@ -42,15 +43,29 @@ export function JournalQuickEntry({
     const trimmed = text.trim();
     if (!trimmed) return;
     const [hh, mm] = timeInput.split(":");
-    const timestamp = `${todayIsoString()}T${hh}:${mm}:00`;
+    const timestamp = `${dateInput}T${hh}:${mm}:00`;
     onSubmit({ timestamp, text: trimmed, tags: extractTags(trimmed) });
     setText("");
+    setDateInput(todayIsoString());
     setTimeInput(nowHHMM());
   }
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
-      <Input type="time" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
+      <div className="flex gap-2">
+        <Input
+          type="date"
+          value={dateInput}
+          onChange={(e) => setDateInput(e.target.value)}
+          className="flex-1"
+        />
+        <Input
+          type="time"
+          value={timeInput}
+          onChange={(e) => setTimeInput(e.target.value)}
+          className="flex-1"
+        />
+      </div>
 
       <Textarea
         value={text}
