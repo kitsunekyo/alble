@@ -166,6 +166,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   const [draftText, setDraftText] = useState(entry.text);
   const [draftTime, setDraftTime] = useState(extractTime(entry.timestamp));
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const draftTags = useMemo(() => extractTags(draftText), [draftText]);
 
   if (!editing) {
     return (
@@ -269,9 +270,20 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
       <Textarea
         value={draftText}
         onChange={(e) => setDraftText(e.target.value)}
+        placeholder="Was ist passiert? #tag"
         className="min-h-20"
         maxLength={2000}
       />
+
+      {draftTags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {draftTags.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={() => setEditing(false)}>
           Verwerfen
