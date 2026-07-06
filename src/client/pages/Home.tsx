@@ -143,7 +143,7 @@ export function Home() {
             className="min-h-20"
           />
           <div className="flex justify-end">
-            <Button onClick={submit} disabled={!canSubmit || isPending} className="cursor-pointer">
+            <Button onClick={submit} disabled={!canSubmit || isPending} className="w-full md:w-auto cursor-pointer">
               {isPending ? <Loader2 className="size-4 animate-spin" /> : "Eintragen"}
             </Button>
           </div>

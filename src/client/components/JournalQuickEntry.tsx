@@ -89,7 +89,7 @@ export function JournalQuickEntry({
         <Button
           type="submit"
           disabled={!canSubmit}
-          className="cursor-pointer"
+          className="w-full md:w-auto cursor-pointer"
         >
           {submitting ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
         </Button>
