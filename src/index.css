@@ -103,6 +103,10 @@
     @apply text-foreground antialiased;
     font-family: var(--font-sans), system-ui, sans-serif;
   }
+  p,
+  textarea {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
 }
 
 body {
