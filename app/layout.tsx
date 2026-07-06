@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Cause } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Providers } from "@/client/providers";
 import "@/index.css";
 
-const cause = Cause({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-cause",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="de"
-      className={cause.variable}
+      className={inter.variable}
       suppressHydrationWarning
     >
       <head>
