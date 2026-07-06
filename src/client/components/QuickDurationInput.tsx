@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/client/components/ui/input";
 import { cn } from "@/client/lib/utils";
+
+export const MAX_DURATION_SECONDS = 86_400;
 
 export function parseDuration(input: string): number | null {
   const trimmed = input.trim();
@@ -60,6 +62,18 @@ export function QuickDurationInput({
   placeholder = "z.B. 1h20m4s",
 }: QuickDurationInputProps) {
   const seconds = useMemo(() => parseDuration(value), [value]);
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedValue(value), 500);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  const debouncedSeconds = useMemo(() => parseDuration(debouncedValue), [debouncedValue]);
+  const isError = debouncedValue.trim() !== "" && debouncedSeconds === null;
+  const isOverLimit =
+    !isError && debouncedSeconds !== null && debouncedSeconds > MAX_DURATION_SECONDS;
+  const showError = isError || isOverLimit;
 
   return (
     <div className={cn("space-y-1.5", className)}>
@@ -72,14 +86,24 @@ export function QuickDurationInput({
         spellCheck={false}
         placeholder={placeholder}
         value={value}
+        aria-invalid={showError || undefined}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") onEnter?.();
         }}
+        className={showError ? "border-destructive focus-visible:ring-destructive" : undefined}
       />
-      <div className="min-h-5 text-sm tabular-nums text-muted-foreground">
-        {seconds !== null && seconds > 0 ? (
-          <span>{formatReadable(seconds)}</span>
+      <div className="min-h-5 text-sm tabular-nums">
+        {isError ? (
+          <span className="text-destructive">
+            Ungültiger Wert. Eine gültige Eingabe wäre 1h20m4s
+          </span>
+        ) : isOverLimit ? (
+          <span className="text-destructive">
+            Dauer darf maximal 24 Stunden betragen
+          </span>
+        ) : seconds !== null && seconds > 0 ? (
+          <span className="text-muted-foreground">{formatReadable(seconds)}</span>
         ) : (
           <span className="text-muted-foreground/60">Format: 1h 20m 4s</span>
         )}

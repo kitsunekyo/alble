@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Cause } from "next/font/google";
 import { Providers } from "@/client/providers";
 import "@/index.css";
+
+const cause = Cause({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-cause",
+});
 
 export const metadata: Metadata = {
   title: "Alble - Allein-Bleib-Training",
@@ -24,7 +32,11 @@ const themeScript = `
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="de" suppressHydrationWarning>
+    <html
+      lang="de"
+      className={cause.variable}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

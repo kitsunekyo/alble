@@ -19,6 +19,12 @@ import { Badge } from "@/client/components/ui/badge";
 import { DatePicker } from "@/client/components/DatePicker";
 import { PageTitle } from "@/client/components/PageTitle";
 import {
+  QuickDurationInput,
+  parseDuration,
+  MAX_DURATION_SECONDS,
+} from "@/client/components/QuickDurationInput";
+import { MoodRatingPicker } from "@/client/components/MoodRatingPicker";
+import {
   DurationInput,
   durationPartsToSeconds,
   secondsToDurationParts,
@@ -134,22 +140,26 @@ function DateEntryForm() {
   const addStep = useAddStep();
   const addStepByDate = useAddStepByDate();
 
-  const [duration, setDuration] = useState<DurationParts>({
-    hours: "",
-    minutes: "",
-    seconds: "",
-  });
+  const [duration, setDuration] = useState("");
   const [rating, setRating] = useState<Rating | null>(null);
   const [notes, setNotes] = useState("");
 
   function clearForm() {
-    setDuration({ hours: "", minutes: "", seconds: "" });
+    setDuration("");
     setRating(null);
     setNotes("");
   }
 
+  const parsedDuration = parseDuration(duration);
+  const canSubmit =
+    duration.trim() !== "" &&
+    parsedDuration !== null &&
+    parsedDuration > 0 &&
+    parsedDuration <= MAX_DURATION_SECONDS &&
+    rating !== null;
+
   function submit() {
-    const dur = durationPartsToSeconds(duration);
+    const dur = parseDuration(duration);
     if (dur === null || dur > 86_400) {
       toast.error("Dauer ungültig");
       return;
@@ -222,22 +232,26 @@ function DateEntryForm() {
             </div>
           )}
 
-          <div className="space-y-3">
-            <div className="flex gap-2 items-end">
-              <div className="flex-1">
-                <DurationInput value={duration} onChange={setDuration} onEnter={submit} />
-              </div>
-              <Button onClick={submit} disabled={isPending} className="min-w-20">
-                {isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
-              </Button>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <span className="text-sm font-medium">Trainingsdauer</span>
+              <QuickDurationInput value={duration} onChange={setDuration} onEnter={submit} />
             </div>
-            <RatingPicker value={rating} onChange={setRating} />
+            <div className="space-y-1.5">
+              <span className="text-sm font-medium">Bewertung</span>
+              <MoodRatingPicker value={rating} onChange={setRating} />
+            </div>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optionale Notiz"
               className="min-h-20"
             />
+            <div className="flex justify-end">
+              <Button onClick={submit} disabled={!canSubmit || isPending} className="cursor-pointer">
+                {isPending ? <Loader2 className="size-4 animate-spin" /> : "Eintragen"}
+              </Button>
+            </div>
           </div>
         </>
       )}

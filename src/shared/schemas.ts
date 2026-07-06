@@ -1,7 +1,5 @@
 import { z } from "zod";
 import { RATINGS } from "./ratings";
-import { MOOD_KEYS } from "./journal";
-import type { Mood } from "./journal";
 
 export const ratingSchema = z.enum(RATINGS);
 
@@ -48,7 +46,7 @@ export interface SessionDTO {
 export const createJournalEntrySchema = z.object({
   timestamp: z.string(),
   text: z.string().min(1).max(2000),
-  moods: z.array(z.enum(MOOD_KEYS)).optional().default([]),
+  moods: z.array(z.string()).optional().default([]),
 });
 export type CreateJournalEntryInput = z.infer<typeof createJournalEntrySchema>;
 
@@ -59,6 +57,6 @@ export interface JournalEntryDTO {
   id: number;
   timestamp: string;
   text: string;
-  moods: Mood[];
+  moods: string[];
   created_at: number;
 }

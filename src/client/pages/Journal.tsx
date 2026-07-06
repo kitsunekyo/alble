@@ -9,11 +9,12 @@ import {
   useUpdateJournalEntry,
   useDeleteJournalEntry,
 } from "@/client/hooks/use-journal";
-import { MoodPicker } from "@/client/components/MoodPicker";
+import { JournalQuickEntry } from "@/client/components/JournalQuickEntry";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
 import { Input } from "@/client/components/ui/input";
+import { Badge } from "@/client/components/ui/badge";
 import { PageTitle } from "@/client/components/PageTitle";
 import {
   AlertDialog,
@@ -26,8 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/client/components/ui/alert-dialog";
-import { MOOD_MAP } from "@/shared/journal";
-import type { Mood } from "@/shared/journal";
+import { extractTags } from "@/shared/journal";
 import type { JournalEntryDTO } from "@/shared/schemas";
 import { todayIsoString, parseIsoDate, formatDate, formatWeekday } from "@/shared/dates";
 import { toast } from "sonner";
@@ -74,43 +74,6 @@ export function Journal() {
     router.replace(qs ? `${pathname}?${qs}` : pathname);
   }
 
-  const now = new Date();
-  const currentHH = String(now.getHours()).padStart(2, "0");
-  const currentMM = String(now.getMinutes()).padStart(2, "0");
-
-  const [text, setText] = useState("");
-  const [moods, setMoods] = useState<Mood[]>([]);
-  const [timeInput, setTimeInput] = useState(`${currentHH}:${currentMM}`);
-
-  function resetTime() {
-    const n = new Date();
-    const hh = String(n.getHours()).padStart(2, "0");
-    const mm = String(n.getMinutes()).padStart(2, "0");
-    setTimeInput(`${hh}:${mm}`);
-  }
-
-  function submit() {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      toast.error("Text eingeben");
-      return;
-    }
-    const [hh, mm] = timeInput.split(":");
-    const today = todayIsoString();
-    const timestamp = `${today}T${hh}:${mm}:00`;
-    addEntry.mutate(
-      { timestamp, text: trimmed, moods },
-      {
-        onSuccess: () => {
-          setText("");
-          setMoods([]);
-          resetTime();
-        },
-        onError: (e) => toast.error(e.message),
-      },
-    );
-  }
-
   const grouped = useMemo(() => {
     if (!entries.data) return [];
     const map = new Map<string, JournalEntryDTO[]>();
@@ -144,24 +107,15 @@ export function Journal() {
       <PageTitle>Tagebuch</PageTitle>
 
       <Card className="p-4">
-        <div className="space-y-3">
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Was ist passiert?"
-            className="min-h-20"
-            maxLength={2000}
-          />
-          <MoodPicker value={moods} onChange={setMoods} />
-          <div className="flex gap-2 items-end">
-            <div className="w-28">
-              <Input type="time" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
-            </div>
-            <Button onClick={submit} disabled={addEntry.isPending}>
-              {addEntry.isPending ? <Loader2 className="size-4 animate-spin" /> : "Hinzufügen"}
-            </Button>
-          </div>
-        </div>
+        <JournalQuickEntry
+          submitting={addEntry.isPending}
+          onSubmit={({ timestamp, text, tags }) =>
+            addEntry.mutate(
+              { timestamp, text, moods: tags },
+              { onError: (e) => toast.error(e.message) },
+            )
+          }
+        />
       </Card>
 
       {grouped.length === 0 ? (
@@ -201,13 +155,9 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
   const deleteEntry = useDeleteJournalEntry();
   const [editing, setEditing] = useState(false);
   const [draftText, setDraftText] = useState(entry.text);
-  const [draftMoods, setDraftMoods] = useState<Mood[]>(entry.moods);
   const [draftTime, setDraftTime] = useState(extractTime(entry.timestamp));
 
   if (!editing) {
-    const moodInfos = entry.moods
-      .map((m) => MOOD_MAP[m])
-      .filter((v): v is NonNullable<typeof v> => !!v);
     return (
       <Card className="p-3 space-y-2">
         <div className="flex items-center gap-2">
@@ -251,12 +201,12 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
         <div>
           <p className="text-sm whitespace-pre-wrap">{entry.text}</p>
         </div>
-        {moodInfos.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {moodInfos.map((mi) => (
-              <span key={mi.key} className="text-xs text-muted-foreground">
-                {mi.emoji}&nbsp;{mi.label}
-              </span>
+        {entry.moods.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {entry.moods.map((tag) => (
+              <Badge key={tag} variant="secondary">
+                {tag}
+              </Badge>
             ))}
           </div>
         )}
@@ -275,7 +225,7 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
     updateEntry.mutate(
       {
         id: entry.id,
-        input: { timestamp, text: trimmed, moods: draftMoods },
+        input: { timestamp, text: trimmed, moods: extractTags(trimmed) },
       },
       {
         onSuccess: () => setEditing(false),
@@ -290,7 +240,6 @@ function JournalEntryRow({ entry }: { entry: JournalEntryDTO }) {
         <div className="w-28">
           <Input type="time" value={draftTime} onChange={(e) => setDraftTime(e.target.value)} />
         </div>
-        <MoodPicker value={draftMoods} onChange={setDraftMoods} />
         <Button variant="ghost" size="icon" onClick={save} aria-label="Speichern">
           <Check className="size-4" />
         </Button>

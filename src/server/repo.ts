@@ -14,7 +14,6 @@ import type {
   UpdateJournalEntryInput,
   JournalEntryDTO,
 } from "../shared/schemas";
-import { type Mood, MOOD_KEYS } from "../shared/journal";
 
 function toStepDTO(row: StepRow): StepDTO {
   return {
@@ -280,12 +279,12 @@ export async function importCsvRows(rows: CsvRow[]): Promise<{ sessions: number;
   return { sessions: sessionsCreated, steps: stepsCreated, skipped };
 }
 
-function parseMoods(raw: string | null): Mood[] {
+function parseMoods(raw: string | null): string[] {
   if (!raw) return [];
   try {
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) return [];
-    return arr.filter((v): v is Mood => typeof v === "string" && MOOD_KEYS.includes(v as Mood));
+    return arr.filter((v): v is string => typeof v === "string");
   } catch {
     return [];
   }
