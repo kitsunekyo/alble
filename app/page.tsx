@@ -1,5 +1,5 @@
-import { Today } from "@/client/pages/Today";
+import { Home } from "@/client/pages/Home";
 
 export default function HomePage() {
-  return <Today />;
+  return <Home />;
 }
