@@ -70,12 +70,11 @@ export function Home() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-2 pb-8 space-y-6">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Wie gehts Pina heute?
-      </h1>
-
       <section className="space-y-2">
-        <Card className="p-4">
+        <Card className="p-4 space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Wie gehts Pina heute?
+          </h2>
           <div className="flex gap-2">
             {MOOD_OPTIONS.map((m) => {
               const active = selected === m.key;
@@ -98,7 +97,7 @@ export function Home() {
               );
             })}
           </div>
-          <div className="mt-4">
+          <div>
             <JournalQuickEntry
               submitting={addJournalEntry.isPending}
               onSubmit={({ timestamp, text, tags }) => {
@@ -125,10 +124,10 @@ export function Home() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Alleinbleiben Training
-        </h2>
         <Card className="p-4 space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Alleinbleiben Training
+          </h2>
           <div className="space-y-1.5">
             <span className="text-sm font-medium">Trainingsdauer</span>
             <QuickDurationInput value={duration} onChange={setDuration} onEnter={submit} />
