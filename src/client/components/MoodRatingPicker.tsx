@@ -11,6 +11,14 @@ export const MOOD_OPTIONS = [
   { key: "mies", emoji: "😢", label: "Mies", rating: "Abbruch" as Rating },
 ] as const;
 
+export const MOOD_COLORS: Record<string, string> = {
+  "sehr-gut": "hsl(80.78deg 72.71% 60.15% / 22%)",
+  "gut": "hsl(136.17deg 100% 50% / 11%)",
+  ok: "hsl(53.09deg 100% 50% / 22%)",
+  schlecht: "hsl(38.82deg 100% 50% / 22%)",
+  mies: "hsl(0deg 100% 93.33%)",
+};
+
 interface MoodRatingPickerProps {
   value: Rating | null;
   onChange: (rating: Rating | null) => void;
@@ -29,11 +37,10 @@ export function MoodRatingPicker({ value, onChange, className }: MoodRatingPicke
             aria-pressed={active}
             onClick={() => onChange(active ? null : m.rating)}
             className={cn(
-              "flex-1 rounded-lg border bg-white flex flex-col items-center justify-center gap-1 py-2 transition-colors cursor-pointer",
-              "hover:bg-muted",
-              active && "border-transparent",
+              "flex-1 rounded-lg border-2 border-transparent flex flex-col items-center justify-center gap-1 py-2 transition-colors cursor-pointer",
+              active && "border-primary",
             )}
-            style={active ? { backgroundColor: BEIGE, borderColor: BEIGE } : undefined}
+            style={{ backgroundColor: MOOD_COLORS[m.key] }}
           >
             <span className="text-xl leading-none">{m.emoji}</span>
             <span className="text-xs font-medium hidden md:block">{m.label}</span>

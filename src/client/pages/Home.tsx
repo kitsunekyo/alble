@@ -8,10 +8,11 @@ import { Card } from "@/client/components/ui/card";
 import { Button } from "@/client/components/ui/button";
 import { Textarea } from "@/client/components/ui/textarea";
 import { QuickDurationInput, parseDuration, MAX_DURATION_SECONDS } from "@/client/components/QuickDurationInput";
-import { MoodRatingPicker, MOOD_OPTIONS, BEIGE } from "@/client/components/MoodRatingPicker";
+import { MoodRatingPicker, MOOD_OPTIONS, MOOD_COLORS } from "@/client/components/MoodRatingPicker";
 import { useTodaySession, useAddStep, useAddTodayStep } from "@/client/hooks/use-sessions";
 import { useAddJournalEntry } from "@/client/hooks/use-journal";
 import { JournalQuickEntry } from "@/client/components/JournalQuickEntry";
+import { TrainingWeeklyStats, JournalWeeklyStats } from "@/client/components/WeeklyStats";
 import { type Rating } from "@/shared/ratings";
 import { cn } from "@/client/lib/utils";
 
@@ -72,7 +73,7 @@ export function Home() {
     <div className="max-w-2xl mx-auto px-4 pt-2 pb-8 space-y-6">
       <section className="space-y-2">
         <Card className="p-4 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-lg font-semibold tracking-tight">
             Wie gehts Pina heute?
           </h2>
           <div className="flex gap-2">
@@ -85,11 +86,10 @@ export function Home() {
                   aria-pressed={active}
                   onClick={() => setSelected(active ? null : m.key)}
                   className={cn(
-                    "flex-1 aspect-square rounded-xl border bg-white flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer",
-                    "hover:bg-muted",
-                    active && "border-transparent",
+                    "flex-1 aspect-square rounded-xl border-2 border-transparent flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer",
+                    active && "border-primary",
                   )}
-                  style={active ? { backgroundColor: BEIGE, borderColor: BEIGE } : undefined}
+                  style={{ backgroundColor: MOOD_COLORS[m.key] }}
                 >
                   <span className="text-3xl leading-none">{m.emoji}</span>
                   <span className="text-sm font-medium hidden md:block">{m.label}</span>
@@ -112,6 +112,7 @@ export function Home() {
             />
           </div>
         </Card>
+        <JournalWeeklyStats />
         <div className="text-center">
           <Link
             href="/journal"
@@ -125,7 +126,7 @@ export function Home() {
 
       <section className="space-y-2">
         <Card className="p-4 space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight">
+          <h2 className="text-lg font-semibold tracking-tight">
             Alleinbleiben Training
           </h2>
           <div className="space-y-1.5">
@@ -148,6 +149,7 @@ export function Home() {
             </Button>
           </div>
         </Card>
+        <TrainingWeeklyStats />
         <div className="text-center">
           <Link
             href="/history"

@@ -36,7 +36,13 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listSessions: () => request<SessionDTO[]>("/api/sessions"),
+  listSessions: (params?: { limit?: number; offset?: number }) => {
+    const qp = params ? new URLSearchParams() : undefined;
+    if (params?.limit) qp!.set("limit", String(params.limit));
+    if (params?.offset) qp!.set("offset", String(params.offset));
+    const qs = qp ? `?${qp.toString()}` : "";
+    return request<SessionDTO[]>(`/api/sessions${qs}`);
+  },
   todaySession: () => request<SessionDTO | null>("/api/sessions/today"),
   addTodayStep: (input: CreateStepInput) =>
     request<SessionDTO>("/api/sessions/today/steps", {

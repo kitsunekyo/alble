@@ -54,7 +54,14 @@ function parseId(raw: string | undefined): number | null {
 
 export const apiRoutes = {
   "/api/sessions": {
-    GET: async () => json(await repo.listSessions()),
+    GET: async (req: Request) => {
+      const url = new URL(req.url);
+      const limitRaw = url.searchParams.get("limit");
+      const offsetRaw = url.searchParams.get("offset");
+      const limit = limitRaw ? parseInt(limitRaw, 10) : undefined;
+      const offset = offsetRaw ? parseInt(offsetRaw, 10) : undefined;
+      return json(await repo.listSessions(limit, offset));
+    },
     POST: async (req: Request) => {
       const r = await readJson(req, createSessionSchema);
       if (!r.ok) return r.res;

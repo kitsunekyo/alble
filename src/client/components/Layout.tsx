@@ -2,19 +2,8 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ArrowLeft, MoreVertical, Settings as SettingsIcon, Sun, Moon, Monitor, CalendarClock, History, BarChart3, BookOpen } from "lucide-react";
-import { useTheme } from "@/client/lib/theme";
+import { ArrowLeft, CalendarClock, History, BarChart3, BookOpen, Settings } from "lucide-react";
 import { getRouteConfig, getParentPath, shouldHideHeader } from "@/client/lib/routes";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuLabel,
-} from "@/client/components/ui/dropdown-menu";
 import { cn } from "@/client/lib/utils";
 
 const navItems = [
@@ -52,15 +41,15 @@ function Header({ pathname }: { pathname: string }) {
       className="sticky top-0 z-30 flex items-center px-2 py-2"
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
     >
-      <div className="flex h-10 w-14 items-center justify-start">
+      <div className="flex items-center justify-start">
         {isHome ? (
-          <img src="/pwa/icon-192.png" alt="Alble" className="size-8 rounded-lg" />
+          <img src="/pwa/icon-192.png" alt="Alble" className="size-10 rounded-full bg-primary" />
         ) : parent ? (
           <button
             type="button"
             onClick={() => router.push(parent)}
             aria-label="Zurück"
-            className="flex items-center justify-center size-10 rounded-full text-foreground hover:bg-muted/60 transition-colors"
+            className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors"
           >
             <ArrowLeft className="size-5" />
           </button>
@@ -83,55 +72,21 @@ function Header({ pathname }: { pathname: string }) {
 }
 
 function OverflowMenu() {
-  const { theme, setTheme } = useTheme();
-  const current = theme ?? "system";
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label="Menü"
-          className="flex items-center justify-center size-10 rounded-full text-foreground hover:bg-muted/60 transition-colors"
-        >
-          <MoreVertical className="size-5" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="cursor-pointer">
-            <SettingsIcon className="size-4" />
-            Einstellungen
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Design</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={current}
-          onValueChange={(v) => setTheme(v as "system" | "light" | "dark")}
-        >
-          <DropdownMenuRadioItem value="system">
-            <Monitor className="size-4 mr-1" />
-            System
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="light">
-            <Sun className="size-4 mr-1" />
-            Hell
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
-            <Moon className="size-4 mr-1" />
-            Dunkel
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Link
+      href="/settings"
+      aria-label="Einstellungen"
+      className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors"
+    >
+      <Settings className="size-5" />
+    </Link>
   );
 }
 
 function BottomNav({ pathname }: { pathname: string }) {
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 bg-background/80 backdrop-blur border-t z-40"
+      className="fixed bottom-0 inset-x-0 bg-background/80 backdrop-blur z-40 shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.1)] rounded-t-2xl"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="grid grid-cols-4">

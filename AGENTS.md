@@ -20,4 +20,4 @@ When asked for a change:
 1. Implement the change
 2. Run `pnpm typecheck` to verify
 3. `git add`, `git commit`, `git push`
-4. Deploy with `pnpm exec vercel --prod`
+4. Deploy only when explicitly told to deploy

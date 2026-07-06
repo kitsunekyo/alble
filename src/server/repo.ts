@@ -42,8 +42,11 @@ async function nextGlobalDay(): Promise<number> {
   return (r?.m ?? 0) + 1;
 }
 
-export async function listSessions(): Promise<SessionDTO[]> {
-  const sessionRows = await db.select().from(sessions).orderBy(asc(sessions.global_day)).all();
+export async function listSessions(limit?: number, offset?: number): Promise<SessionDTO[]> {
+  let query = db.select().from(sessions).orderBy(desc(sessions.global_day)).$dynamic();
+  if (limit !== undefined) query = query.limit(limit);
+  if (offset !== undefined) query = query.offset(offset);
+  const sessionRows = await query.all();
   if (sessionRows.length === 0) return [];
   const stepRows = await db
     .select()

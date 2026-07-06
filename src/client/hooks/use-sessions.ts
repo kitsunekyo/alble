@@ -9,12 +9,16 @@ import type {
 
 const KEYS = {
   all: ["sessions"] as const,
+  list: (limit?: number, offset?: number) => ["sessions", "list", limit, offset] as const,
   today: ["sessions", "today"] as const,
   one: (id: number) => ["sessions", id] as const,
 };
 
-export function useSessions() {
-  return useQuery({ queryKey: KEYS.all, queryFn: api.listSessions });
+export function useSessions(limit?: number, offset?: number) {
+  return useQuery({
+    queryKey: KEYS.list(limit, offset),
+    queryFn: () => api.listSessions({ limit, offset }),
+  });
 }
 
 export function useTodaySession() {

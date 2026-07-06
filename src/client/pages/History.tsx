@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2, Trash2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Loader2, Trash2, ChevronDown, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import {
   useSessions,
   useAddStep,
@@ -56,8 +57,26 @@ import type { SessionDTO, StepDTO } from "@/shared/schemas";
 import { toast } from "sonner";
 import { cn } from "@/client/lib/utils";
 
+const PAGE_SIZE = 10;
+
 export function History() {
-  const sessions = useSessions();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const page = parseInt(searchParams.get("page") ?? "1", 10);
+  const offset = (page - 1) * PAGE_SIZE;
+  const sessions = useSessions(PAGE_SIZE, offset);
+
+  function setPage(p: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (p <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(p));
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }
 
   const grouped = useMemo(() => {
     if (!sessions.data) return [];
@@ -105,11 +124,10 @@ export function History() {
     );
   }
 
-  if (!sessions.data || sessions.data.length === 0) {
+  if (sessions.isError) {
     return (
       <div className="max-w-2xl mx-auto px-4 pt-8 text-center text-muted-foreground">
-        Noch keine Daten. Lege auf <strong>Heute</strong> die erste Einheit an oder importiere die
-        CSV in <strong>Einstellungen</strong>.
+        Fehler beim Laden.
       </div>
     );
   }
@@ -118,14 +136,30 @@ export function History() {
     <div className="max-w-2xl mx-auto px-4 pt-2 pb-8 space-y-6">
       <DateEntryForm />
 
-      {grouped.map(({ key, label, items }) => (
-        <section key={key} className="space-y-2">
-          <h2 className="text-sm font-medium text-muted-foreground">{label}</h2>
-          {items.map((s) => (
-            <SessionCard key={s.id} session={s} />
-          ))}
-        </section>
-      ))}
+      {!sessions.data || sessions.data.length === 0 ? (
+        <Card className="p-6 text-center text-muted-foreground text-sm">
+          {page > 1 ? "Keine Trainings in diesem Zeitraum." : <>Noch keine Daten. Lege auf <strong>Heute</strong> die erste Einheit an oder importiere die CSV in <strong>Einstellungen</strong>.</>}
+        </Card>
+      ) : (
+        grouped.map(({ key, label, items }) => (
+          <section key={key} className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground">{label}</h2>
+            {items.map((s) => (
+              <SessionCard key={s.id} session={s} />
+            ))}
+          </section>
+        ))
+      )}
+
+      <div className="flex items-center justify-center gap-4 pt-2">
+        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+          <ChevronLeft className="size-4 mr-1" /> Neuere
+        </Button>
+        <span className="text-sm text-muted-foreground tabular-nums">Seite {page}</span>
+        <Button variant="outline" size="sm" onClick={() => setPage(page + 1)}>
+          Ältere <ChevronRight className="size-4 ml-1" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -195,24 +229,12 @@ function DateEntryForm() {
 
   return (
     <Card className="p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <label className="text-sm text-muted-foreground">Datum</label>
+      <div className="mb-4">
         <DatePicker
           value={selectedDate}
           onChange={(v) => v && setSelectedDate(v)}
-          className="w-auto"
+          className="w-full"
         />
-        {session.data ? (
-          <span className="text-sm text-muted-foreground ml-auto">
-            {formatWeekday(session.data.date ?? selectedDate)}, {formatDate(session.data.date ?? selectedDate)} ·{" "}
-            Trainingstag {session.data.global_day} · {session.data.steps.length} Einheit
-            {session.data.steps.length === 1 ? "" : "en"}
-          </span>
-        ) : !session.isLoading ? (
-          <span className="text-sm text-muted-foreground ml-auto">
-            {formatWeekday(selectedDate)}, {formatDate(selectedDate)} · 0 Einheiten
-          </span>
-        ) : null}
       </div>
 
       {session.isLoading ? (
@@ -251,6 +273,18 @@ function DateEntryForm() {
             </div>
           </div>
         </>
+      )}
+
+      {!session.isLoading && (
+        <div className="text-sm text-muted-foreground text-center pt-2">
+          {session.data ? (
+            <>{formatWeekday(session.data.date ?? selectedDate)}, {formatDate(session.data.date ?? selectedDate)} ·{" "}
+              Trainingstag {session.data.global_day} · {session.data.steps.length} Einheit
+              {session.data.steps.length === 1 ? "" : "en"}</>
+          ) : (
+            <>{formatWeekday(selectedDate)}, {formatDate(selectedDate)} · 0 Einheiten</>
+          )}
+        </div>
       )}
     </Card>
   );
