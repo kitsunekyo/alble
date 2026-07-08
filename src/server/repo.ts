@@ -369,6 +369,30 @@ export async function updateJournalEntry(id: number, input: UpdateJournalEntryIn
   return updated ? toJournalEntryDTO(updated) : null;
 }
 
+export async function listRecentTags(limit: number = 15): Promise<string[]> {
+  const rows = await db
+    .select({ moods: journalEntries.moods })
+    .from(journalEntries)
+    .where(isNotNull(journalEntries.moods))
+    .orderBy(desc(journalEntries.timestamp))
+    .all();
+
+  const seen = new Set<string>();
+  const tags: string[] = [];
+  for (const row of rows) {
+    const parsed = parseMoods(row.moods);
+    for (const tag of parsed) {
+      const key = tag.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        tags.push(tag);
+        if (tags.length >= limit) return tags;
+      }
+    }
+  }
+  return tags;
+}
+
 export async function deleteJournalEntry(id: number): Promise<boolean> {
   const existing = await db.select({ id: journalEntries.id }).from(journalEntries).where(eq(journalEntries.id, id)).get();
   if (!existing) return false;

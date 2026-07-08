@@ -37,6 +37,14 @@ export function useUpdateJournalEntry() {
   });
 }
 
+export function useRecentTags() {
+  return useQuery({
+    queryKey: [...KEYS.all, "tags"],
+    queryFn: () => api.journal.tags(),
+    staleTime: 30_000,
+  });
+}
+
 export function useDeleteJournalEntry() {
   const invalidate = useInvalidateAll();
   return useMutation({

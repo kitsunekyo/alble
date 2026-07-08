@@ -299,6 +299,10 @@ export const apiRoutes = {
     },
   },
 
+  "/api/journal/tags": {
+    GET: async () => json(await repo.listRecentTags()),
+  },
+
   "/api/journal/:id": {
     GET: async (req: RouteRequest) => {
       const id = parseId(req.params.id);

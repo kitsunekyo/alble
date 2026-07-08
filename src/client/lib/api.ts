@@ -95,5 +95,6 @@ export const api = {
       request<JournalEntryDTO>(`/api/journal/${id}`, { method: "PATCH", body: JSON.stringify(input) }),
     delete: (id: number) =>
       request<void>(`/api/journal/${id}`, { method: "DELETE" }),
+    tags: () => request<string[]>("/api/journal/tags"),
   },
 };

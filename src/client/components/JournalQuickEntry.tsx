@@ -6,6 +6,7 @@ import { Input } from "@/client/components/ui/input";
 import { Textarea } from "@/client/components/ui/textarea";
 import { Button } from "@/client/components/ui/button";
 import { Badge } from "@/client/components/ui/badge";
+import { RecentTags } from "@/client/components/RecentTags";
 import { todayIsoString } from "@/shared/dates";
 import { extractTags } from "@/shared/journal";
 
@@ -34,6 +35,13 @@ export function JournalQuickEntry({
   const [text, setText] = useState("");
   const [dateInput, setDateInput] = useState(todayIsoString());
   const [timeInput, setTimeInput] = useState(nowHHMM());
+
+  function handleTagSelect(label: string) {
+    setText((prev) => {
+      const trimmed = prev.trimEnd();
+      return trimmed ? `${trimmed} #${label}` : `#${label}`;
+    });
+  }
 
   const tags = useMemo(() => extractTags(text), [text]);
   const canSubmit = text.trim().length > 0 && !submitting;
@@ -66,6 +74,8 @@ export function JournalQuickEntry({
           className="flex-1"
         />
       </div>
+
+      <RecentTags onSelect={handleTagSelect} />
 
       <Textarea
         value={text}
