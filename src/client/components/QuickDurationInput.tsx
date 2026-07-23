@@ -59,7 +59,7 @@ export function QuickDurationInput({
   onChange,
   onEnter,
   className,
-  placeholder = "z.B. 1h20m4s",
+  placeholder = "0h",
 }: QuickDurationInputProps) {
   const seconds = useMemo(() => parseDuration(value), [value]);
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -93,21 +93,7 @@ export function QuickDurationInput({
         }}
         className={showError ? "border-destructive focus-visible:ring-destructive" : undefined}
       />
-      <div className="min-h-5 text-sm tabular-nums">
-        {isError ? (
-          <span className="text-destructive">
-            Ungültiger Wert. Eine gültige Eingabe wäre 1h20m4s
-          </span>
-        ) : isOverLimit ? (
-          <span className="text-destructive">
-            Dauer darf maximal 24 Stunden betragen
-          </span>
-        ) : seconds !== null && seconds > 0 ? (
-          <span className="text-muted-foreground">{formatReadable(seconds)}</span>
-        ) : (
-          <span className="text-muted-foreground/60">Format: 1h 20m 4s</span>
-        )}
-      </div>
+
     </div>
   );
 }
