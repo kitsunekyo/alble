@@ -16,9 +16,41 @@ import { TrainingWeeklyStats, JournalWeeklyStats } from "@/client/components/Wee
 import { type Rating } from "@/shared/ratings";
 import { cn } from "@/client/lib/utils";
 
+function timeToSeconds(t: string): number {
+  const [h = "0", m = "0", s = "0"] = t.split(":");
+  return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s);
+}
+
+function secondsToTime(total: number): string {
+  const h = Math.floor(total / 3600) % 24;
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
+}
+
+function secondsToDurationString(total: number): string {
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const parts: string[] = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}m`);
+  if (s > 0) parts.push(`${s}s`);
+  return parts.join(" ") || "0s";
+}
+
+function getCurrentTime(): string {
+  const now = new Date();
+  return [now.getHours(), now.getMinutes(), now.getSeconds()]
+    .map((v) => String(v).padStart(2, "0"))
+    .join(":");
+}
+
 export function Home() {
   const [selected, setSelected] = useState<string | null>(null);
   const [duration, setDuration] = useState("");
+  const [startTime, setStartTime] = useState(getCurrentTime);
+  const [endTime, setEndTime] = useState("");
   const [rating, setRating] = useState<Rating | null>(null);
   const [notes, setNotes] = useState("");
 
@@ -35,6 +67,33 @@ export function Home() {
     parsedDuration > 0 &&
     parsedDuration <= MAX_DURATION_SECONDS &&
     rating !== null;
+
+  function handleDurationChange(value: string) {
+    setDuration(value);
+    const parsed = parseDuration(value);
+    if (parsed !== null && parsed > 0) {
+      const startSeconds = timeToSeconds(startTime || "00:00:00");
+      setEndTime(secondsToTime(startSeconds + parsed));
+    }
+  }
+
+  function handleStartTimeChange(value: string) {
+    setStartTime(value);
+    const parsed = parseDuration(duration);
+    if (parsed !== null && parsed > 0) {
+      const startSeconds = timeToSeconds(value || "00:00:00");
+      setEndTime(secondsToTime(startSeconds + parsed));
+    }
+  }
+
+  function handleEndTimeChange(value: string) {
+    setEndTime(value);
+    const endSeconds = timeToSeconds(value || "00:00:00");
+    const startSeconds = timeToSeconds(startTime || "00:00:00");
+    let diff = endSeconds - startSeconds;
+    if (diff < 0) diff += 24 * 3600;
+    setDuration(secondsToDurationString(diff));
+  }
 
   function reset() {
     setDuration("");
@@ -131,7 +190,27 @@ export function Home() {
           </h2>
           <div className="space-y-1.5">
             <span className="text-sm font-medium">Trainingsdauer</span>
-            <QuickDurationInput value={duration} onChange={setDuration} onEnter={submit} />
+            <QuickDurationInput value={duration} onChange={handleDurationChange} onEnter={submit} />
+          </div>
+          <div className="space-y-1.5">
+            <span className="text-sm font-medium">Start</span>
+            <input
+              type="time"
+              step="1"
+              value={startTime}
+              onChange={(e) => handleStartTimeChange(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <span className="text-sm font-medium">Ende</span>
+            <input
+              type="time"
+              step="1"
+              value={endTime}
+              onChange={(e) => handleEndTimeChange(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
           </div>
           <div className="space-y-1.5">
             <span className="text-sm font-medium">Bewertung</span>
