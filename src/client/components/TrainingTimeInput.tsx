@@ -54,13 +54,14 @@ export function TrainingTimeInput({
   const [endCommitted, setEndCommitted] = useState(false);
 
   const startTimeRef = useRef(startTime);
-  const endTimeRef = useRef(endTime);
+  const onChangeRef = useRef(onChange);
   useEffect(() => { startTimeRef.current = startTime; }, [startTime]);
-  useEffect(() => { endTimeRef.current = endTime; }, [endTime]);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
   const startSecs = timeToSeconds(startTime);
   const endSecs = timeToSeconds(endTime);
-  const isEndBeforeStart = endCommitted && startSecs !== null && endSecs !== null && endSecs <= startSecs;
+  const isEndBeforeStart =
+    endCommitted && startSecs !== null && endSecs !== null && endSecs <= startSecs;
 
   function handleDurationBlur() {
     const s = timeToSeconds(startTimeRef.current);
@@ -88,7 +89,6 @@ export function TrainingTimeInput({
 
   function handleEndTimeChange(newTime: string) {
     setEndTime(newTime);
-    setEndCommitted(false);
   }
 
   function handleEndTimeBlur(blurredTime: string) {
@@ -98,7 +98,7 @@ export function TrainingTimeInput({
     if (s !== null && e !== null) {
       const diff = e - s;
       if (diff > 0) {
-        onChange(formatDuration(diff));
+        onChangeRef.current(formatDuration(diff));
       }
     }
   }
