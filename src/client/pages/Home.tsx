@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { Card } from "@/client/components/ui/card";
 import { Button } from "@/client/components/ui/button";
 import { Textarea } from "@/client/components/ui/textarea";
-import { QuickDurationInput, parseDuration, MAX_DURATION_SECONDS } from "@/client/components/QuickDurationInput";
+import { parseDuration, MAX_DURATION_SECONDS } from "@/client/components/QuickDurationInput";
+import { TrainingTimeInput } from "@/client/components/TrainingTimeInput";
 import { MoodRatingPicker, MOOD_OPTIONS, MOOD_COLORS } from "@/client/components/MoodRatingPicker";
 import { useTodaySession, useAddStep, useAddTodayStep } from "@/client/hooks/use-sessions";
 import { useAddJournalEntry } from "@/client/hooks/use-journal";
@@ -129,10 +130,7 @@ export function Home() {
           <h2 className="text-lg font-semibold tracking-tight">
             Alleinbleiben Training
           </h2>
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">Trainingsdauer</span>
-            <QuickDurationInput value={duration} onChange={setDuration} onEnter={submit} />
-          </div>
+          <TrainingTimeInput value={duration} onChange={setDuration} onEnter={submit} />
           <div className="space-y-1.5">
             <span className="text-sm font-medium">Bewertung</span>
             <MoodRatingPicker value={rating} onChange={setRating} />
