@@ -23,7 +23,7 @@ function timeToSeconds(time: string): number | null {
   const m = Number(parts[1]);
   const s = Number(parts[2]);
   if (isNaN(h) || isNaN(m) || isNaN(s)) return null;
-  if (h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) return null;
+  if (h < 0 || h > 24 || m < 0 || m > 59 || s < 0 || s > 59) return null;
   return h * 3600 + m * 60 + s;
 }
 

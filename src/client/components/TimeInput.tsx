@@ -12,7 +12,7 @@ interface TimeInputProps {
 }
 
 function maxForSegment(index: number): number {
-  return index === 0 ? 23 : 59;
+  return index === 0 ? 24 : 59;
 }
 
 export function TimeInput({ value, onChange, onBlur, className, error }: TimeInputProps) {
@@ -92,6 +92,12 @@ export function TimeInput({ value, onChange, onBlur, className, error }: TimeInp
       if (isNaN(n)) return "00";
       return String(Math.min(n, maxForSegment(i))).padStart(2, "0");
     });
+
+    valid.forEach((v, i) => {
+      const el = refs.current[i];
+      if (el && el.value !== v) el.value = v;
+    });
+
     const timeStr = valid.join(":");
     if (timeStr !== value) onChange(timeStr);
     onBlur?.(timeStr);
