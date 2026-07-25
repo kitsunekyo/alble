@@ -6,13 +6,18 @@ import { cn } from "@/client/lib/utils";
 interface TimeInputProps {
   value: string;
   onChange: (value: string) => void;
-  onBlur?: () => void;
+  onBlur?: (value: string) => void;
   className?: string;
   error?: boolean;
 }
 
+function maxForSegment(index: number): number {
+  return index === 0 ? 23 : 59;
+}
+
 export function TimeInput({ value, onChange, onBlur, className, error }: TimeInputProps) {
-  const parts = value.split(":");
+  const displayValue = value || "00:00:00";
+  const parts = displayValue.split(":");
   const refs = useRef<(HTMLInputElement | null)[]>([null, null, null]);
 
   function setRef(i: number) {
@@ -21,12 +26,24 @@ export function TimeInput({ value, onChange, onBlur, className, error }: TimeInp
     };
   }
 
+  function readFromDom(): string[] {
+    return refs.current.map((r) => r?.value ?? "00");
+  }
+
   function handleInput(index: number) {
     const input = refs.current[index];
     if (!input) return;
 
-    const clean = input.value.replace(/\D/g, "").slice(0, 2);
-    if (clean !== input.value) input.value = clean;
+    let clean = input.value.replace(/\D/g, "").slice(0, 2);
+
+    if (clean.length === 2) {
+      const val = parseInt(clean, 10);
+      const max = maxForSegment(index);
+      if (val > max) {
+        clean = String(max).padStart(2, "0");
+        input.value = clean;
+      }
+    }
 
     const next = value.split(":");
     next[index] = clean.padStart(2, "0");
@@ -69,16 +86,15 @@ export function TimeInput({ value, onChange, onBlur, className, error }: TimeInp
   }
 
   function handleSegmentBlur() {
-    const p = value.split(":");
-    const valid = p.map((s, i) => {
+    const segValues = readFromDom();
+    const valid = segValues.map((s, i) => {
       const n = parseInt(s, 10);
       if (isNaN(n)) return "00";
-      const max = i === 0 ? 23 : 59;
-      return String(Math.min(n, max)).padStart(2, "0");
+      return String(Math.min(n, maxForSegment(i))).padStart(2, "0");
     });
     const timeStr = valid.join(":");
     if (timeStr !== value) onChange(timeStr);
-    onBlur?.();
+    onBlur?.(timeStr);
   }
 
   return (

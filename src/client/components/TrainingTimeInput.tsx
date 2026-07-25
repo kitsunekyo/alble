@@ -57,11 +57,10 @@ export function TrainingTimeInput({
   const isEndBeforeStart = startSecs !== null && endSecs !== null && endSecs <= startSecs;
 
   function handleDurationBlur() {
-    if (startSecs !== null) {
-      const durSecs = parseDuration(value);
-      if (durSecs !== null && durSecs > 0) {
-        setEndTime(secondsToTime(startSecs + durSecs));
-      }
+    const s = timeToSeconds(startTime);
+    const d = parseDuration(value);
+    if (s !== null && d !== null && d > 0) {
+      setEndTime(secondsToTime(s + d));
     }
   }
 
@@ -69,12 +68,11 @@ export function TrainingTimeInput({
     setStartTime(newTime);
   }
 
-  function handleStartTimeBlur() {
-    if (startSecs !== null) {
-      const durSecs = parseDuration(value);
-      if (durSecs !== null && durSecs > 0) {
-        setEndTime(secondsToTime(startSecs + durSecs));
-      }
+  function handleStartTimeBlur(blurredTime: string) {
+    const s = timeToSeconds(blurredTime);
+    const d = parseDuration(value);
+    if (s !== null && d !== null && d > 0) {
+      setEndTime(secondsToTime(s + d));
     }
   }
 
@@ -82,9 +80,11 @@ export function TrainingTimeInput({
     setEndTime(newTime);
   }
 
-  function handleEndTimeBlur() {
-    if (startSecs !== null && endSecs !== null) {
-      const diff = endSecs - startSecs;
+  function handleEndTimeBlur(blurredTime: string) {
+    const s = timeToSeconds(startTime);
+    const e = timeToSeconds(blurredTime);
+    if (s !== null && e !== null) {
+      const diff = e - s;
       if (diff > 0) {
         onChange(formatDuration(diff));
       }
