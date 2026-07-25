@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Input } from "@/client/components/ui/input";
+import { TimeInput } from "@/client/components/TimeInput";
 import { cn } from "@/client/lib/utils";
 import { formatDuration } from "@/shared/ratings";
 import { parseDuration } from "@/client/components/QuickDurationInput";
@@ -109,31 +110,17 @@ export function TrainingTimeInput({
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
           <span className="text-xs text-muted-foreground">Start</span>
-          <Input
-            type="text"
-            inputMode="numeric"
-            autoCapitalize="none"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            placeholder="HH:MM:SS"
+          <TimeInput
             value={startTime}
-            onChange={(e) => handleStartTimeChange(e.target.value)}
+            onChange={handleStartTimeChange}
             onBlur={handleStartTimeBlur}
           />
         </div>
         <div className="space-y-1">
           <span className="text-xs text-muted-foreground">Ende</span>
-          <Input
-            type="text"
-            inputMode="numeric"
-            autoCapitalize="none"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            placeholder="HH:MM:SS"
+          <TimeInput
             value={endTime}
-            onChange={(e) => handleEndTimeChange(e.target.value)}
+            onChange={handleEndTimeChange}
             onBlur={handleEndTimeBlur}
           />
         </div>
