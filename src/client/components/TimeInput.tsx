@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { cn } from "@/client/lib/utils";
 
 interface TimeInputProps {
@@ -8,47 +8,10 @@ interface TimeInputProps {
   onChange: (value: string) => void;
   onBlur?: () => void;
   className?: string;
+  error?: boolean;
 }
 
-function isValidTimeStr(s: string): boolean {
-  const parts = s.split(":");
-  if (parts.length !== 3) return false;
-  return parts.every((p) => /^\d{2}$/.test(p));
-}
-
-export function TimeInput({ value, onChange, onBlur, className }: TimeInputProps) {
-  const [isTouch, setIsTouch] = useState(false);
-
-  useEffect(() => {
-    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
-  }, []);
-
-  if (isTouch) {
-    return (
-      <>
-        <style>{`input.hide-time-controls::-webkit-calendar-picker-indicator,input.hide-time-controls::-webkit-clear-button,input.hide-time-controls::-webkit-inner-spin-button{display:none!important}`}</style>
-        <input
-          type="time"
-          step="1"
-          value={isValidTimeStr(value) ? value : "00:00:00"}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={onBlur}
-          className={cn(
-            "hide-time-controls flex h-10 w-full truncate rounded-md border border-input bg-background px-3 py-2 text-sm",
-            "ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium",
-            "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2",
-            "focus-visible:ring-ring focus-visible:ring-offset-2",
-            className,
-          )}
-        />
-      </>
-    );
-  }
-
-  return <DesktopTimeInput value={value} onChange={onChange} onBlur={onBlur} className={className} />;
-}
-
-function DesktopTimeInput({ value, onChange, onBlur, className }: TimeInputProps) {
+export function TimeInput({ value, onChange, onBlur, className, error }: TimeInputProps) {
   const parts = value.split(":");
   const refs = useRef<(HTMLInputElement | null)[]>([null, null, null]);
 
@@ -121,52 +84,48 @@ function DesktopTimeInput({ value, onChange, onBlur, className }: TimeInputProps
   return (
     <div
       className={cn(
-        "flex h-10 items-center rounded-md border border-input bg-background px-3 py-2 text-sm",
-        "ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+        "flex h-10 items-center rounded-md border bg-background px-3 py-2 text-sm",
+        "ring-offset-background focus-within:ring-2 focus-within:ring-offset-2",
+        error
+          ? "border-destructive focus-within:ring-destructive"
+          : "border-input focus-within:ring-ring",
         className,
       )}
     >
-      <input
-        ref={setRef(0)}
-        defaultValue={parts[0]}
-        maxLength={2}
-        type="text"
-        inputMode="numeric"
-        autoComplete="off"
-        onInput={() => handleInput(0)}
-        onFocus={handleFocus}
-        onKeyDown={(e) => handleKeyDown(0, e)}
-        onBlur={handleSegmentBlur}
-        className="w-[2ch] min-w-0 text-center bg-transparent outline-none tabular-nums font-mono text-base p-0 border-0 focus:ring-0"
-      />
+      <Segment defaultValue={parts[0]} onInput={() => handleInput(0)} onFocus={handleFocus} onKeyDown={(e) => handleKeyDown(0, e)} onBlur={handleSegmentBlur} />
       <span className="text-muted-foreground select-none text-base leading-none mx-px">:</span>
-      <input
-        ref={setRef(1)}
-        defaultValue={parts[1]}
-        maxLength={2}
-        type="text"
-        inputMode="numeric"
-        autoComplete="off"
-        onInput={() => handleInput(1)}
-        onFocus={handleFocus}
-        onKeyDown={(e) => handleKeyDown(1, e)}
-        onBlur={handleSegmentBlur}
-        className="w-[2ch] min-w-0 text-center bg-transparent outline-none tabular-nums font-mono text-base p-0 border-0 focus:ring-0"
-      />
+      <Segment defaultValue={parts[1]} onInput={() => handleInput(1)} onFocus={handleFocus} onKeyDown={(e) => handleKeyDown(1, e)} onBlur={handleSegmentBlur} />
       <span className="text-muted-foreground select-none text-base leading-none mx-px">:</span>
-      <input
-        ref={setRef(2)}
-        defaultValue={parts[2]}
-        maxLength={2}
-        type="text"
-        inputMode="numeric"
-        autoComplete="off"
-        onInput={() => handleInput(2)}
-        onFocus={handleFocus}
-        onKeyDown={(e) => handleKeyDown(2, e)}
-        onBlur={handleSegmentBlur}
-        className="w-[2ch] min-w-0 text-center bg-transparent outline-none tabular-nums font-mono text-base p-0 border-0 focus:ring-0"
-      />
+      <Segment defaultValue={parts[2]} onInput={() => handleInput(2)} onFocus={handleFocus} onKeyDown={(e) => handleKeyDown(2, e)} onBlur={handleSegmentBlur} />
     </div>
+  );
+}
+
+function Segment({
+  defaultValue,
+  onInput,
+  onFocus,
+  onKeyDown,
+  onBlur,
+}: {
+  defaultValue: string | undefined;
+  onInput: () => void;
+  onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onBlur: () => void;
+}) {
+  return (
+    <input
+      defaultValue={defaultValue}
+      maxLength={2}
+      type="text"
+      inputMode="numeric"
+      autoComplete="off"
+      onInput={onInput}
+      onFocus={onFocus}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
+      className="w-[2ch] min-w-0 text-center bg-transparent outline-none tabular-nums font-mono text-base p-0 border-0 focus:ring-0"
+    />
   );
 }

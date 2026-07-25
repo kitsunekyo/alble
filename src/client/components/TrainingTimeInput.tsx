@@ -52,11 +52,16 @@ export function TrainingTimeInput({
   const [startTime, setStartTime] = useState(getCurrentTimeString);
   const [endTime, setEndTime] = useState("");
 
+  const startSecs = timeToSeconds(startTime);
+  const endSecs = timeToSeconds(endTime);
+  const isEndBeforeStart = startSecs !== null && endSecs !== null && endSecs <= startSecs;
+
   function handleDurationBlur() {
-    const startSecs = timeToSeconds(startTime);
-    const durSecs = parseDuration(value);
-    if (startSecs !== null && durSecs !== null && durSecs > 0) {
-      setEndTime(secondsToTime(startSecs + durSecs));
+    if (startSecs !== null) {
+      const durSecs = parseDuration(value);
+      if (durSecs !== null && durSecs > 0) {
+        setEndTime(secondsToTime(startSecs + durSecs));
+      }
     }
   }
 
@@ -65,10 +70,11 @@ export function TrainingTimeInput({
   }
 
   function handleStartTimeBlur() {
-    const startSecs = timeToSeconds(startTime);
-    const durSecs = parseDuration(value);
-    if (startSecs !== null && durSecs !== null && durSecs > 0) {
-      setEndTime(secondsToTime(startSecs + durSecs));
+    if (startSecs !== null) {
+      const durSecs = parseDuration(value);
+      if (durSecs !== null && durSecs > 0) {
+        setEndTime(secondsToTime(startSecs + durSecs));
+      }
     }
   }
 
@@ -77,8 +83,6 @@ export function TrainingTimeInput({
   }
 
   function handleEndTimeBlur() {
-    const startSecs = timeToSeconds(startTime);
-    const endSecs = timeToSeconds(endTime);
     if (startSecs !== null && endSecs !== null) {
       const diff = endSecs - startSecs;
       if (diff > 0) {
@@ -122,7 +126,11 @@ export function TrainingTimeInput({
             value={endTime}
             onChange={handleEndTimeChange}
             onBlur={handleEndTimeBlur}
+            error={isEndBeforeStart}
           />
+          {isEndBeforeStart && (
+            <p className="text-xs text-destructive">Ende muss vor Start sein</p>
+          )}
         </div>
       </div>
     </div>
