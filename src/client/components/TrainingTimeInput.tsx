@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/client/components/ui/input";
 import { TimeInput } from "@/client/components/TimeInput";
 import { cn } from "@/client/lib/utils";
@@ -51,16 +51,23 @@ export function TrainingTimeInput({
 }: TrainingTimeInputProps) {
   const [startTime, setStartTime] = useState(getCurrentTimeString);
   const [endTime, setEndTime] = useState("");
+  const [endCommitted, setEndCommitted] = useState(false);
+
+  const startTimeRef = useRef(startTime);
+  const endTimeRef = useRef(endTime);
+  useEffect(() => { startTimeRef.current = startTime; }, [startTime]);
+  useEffect(() => { endTimeRef.current = endTime; }, [endTime]);
 
   const startSecs = timeToSeconds(startTime);
   const endSecs = timeToSeconds(endTime);
-  const isEndBeforeStart = startSecs !== null && endSecs !== null && endSecs <= startSecs;
+  const isEndBeforeStart = endCommitted && startSecs !== null && endSecs !== null && endSecs <= startSecs;
 
   function handleDurationBlur() {
-    const s = timeToSeconds(startTime);
+    const s = timeToSeconds(startTimeRef.current);
     const d = parseDuration(value);
     if (s !== null && d !== null && d > 0) {
       setEndTime(secondsToTime(s + d));
+      setEndCommitted(true);
     }
   }
 
@@ -70,18 +77,23 @@ export function TrainingTimeInput({
 
   function handleStartTimeBlur(blurredTime: string) {
     const s = timeToSeconds(blurredTime);
-    const d = parseDuration(value);
-    if (s !== null && d !== null && d > 0) {
-      setEndTime(secondsToTime(s + d));
+    if (s !== null) {
+      const d = parseDuration(value);
+      if (d !== null && d > 0) {
+        setEndTime(secondsToTime(s + d));
+        setEndCommitted(true);
+      }
     }
   }
 
   function handleEndTimeChange(newTime: string) {
     setEndTime(newTime);
+    setEndCommitted(false);
   }
 
   function handleEndTimeBlur(blurredTime: string) {
-    const s = timeToSeconds(startTime);
+    setEndCommitted(true);
+    const s = timeToSeconds(startTimeRef.current);
     const e = timeToSeconds(blurredTime);
     if (s !== null && e !== null) {
       const diff = e - s;

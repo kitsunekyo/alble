@@ -45,7 +45,8 @@ export function TimeInput({ value, onChange, onBlur, className, error }: TimeInp
       }
     }
 
-    const next = value.split(":");
+    const segs = value ? value.split(":") : [];
+    const next = [segs[0] ?? "00", segs[1] ?? "00", segs[2] ?? "00"];
     next[index] = clean.padStart(2, "0");
     onChange(next.join(":"));
 
