@@ -1,4 +1,4 @@
-const TAG_PATTERN = /#(\S+)/g;
+const TAG_PATTERN = /#(\w+)/g;
 
 export function extractTags(text: string): string[] {
   const tags = new Set<string>();
