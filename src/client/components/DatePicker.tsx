@@ -12,7 +12,7 @@ import {
 } from "@/client/components/ui/popover"
 import { cn } from "@/client/lib/utils"
 import {
-  dateToIsoString,
+  dateToLocalIsoString,
   formatDate,
   isIsoDateString,
   parseIsoDate,
@@ -37,7 +37,7 @@ function DatePicker({
   const selected = value && isIsoDateString(value) ? parseIsoDate(value) : undefined
 
   function handleSelect(date: Date | undefined) {
-    onChange(date ? dateToIsoString(date) : null)
+    onChange(date ? dateToLocalIsoString(date) : null)
     if (date) setOpen(false)
   }
 
