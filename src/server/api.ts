@@ -7,6 +7,7 @@ import {
   createJournalEntrySchema,
   updateJournalEntrySchema,
 } from "../shared/schemas";
+import { saveAnalysisSchema } from "../shared/analysis";
 import * as repo from "./repo";
 import { parseCsv, rowsToCsv } from "./csv";
 import { db } from "./db/client";
@@ -203,6 +204,32 @@ export const apiRoutes = {
           "content-disposition": `attachment; filename="alble-${todayIsoString()}.csv"`,
         },
       });
+    },
+  },
+
+  "/api/analyses": {
+    GET: async () => json(await repo.listVideoAnalyses()),
+    POST: async (req: Request) => {
+      const r = await readJson(req, saveAnalysisSchema);
+      if (!r.ok) return r.res;
+      return json(await repo.createVideoAnalysis(r.data), { status: 201 });
+    },
+  },
+
+  "/api/analyses/:id": {
+    GET: async (req: RouteRequest) => {
+      const id = parseId(req.params.id);
+      if (id === null) return badRequest("Invalid id");
+      const analysis = await repo.getVideoAnalysis(id);
+      if (!analysis) return notFound();
+      return json(analysis);
+    },
+    DELETE: async (req: RouteRequest) => {
+      const id = parseId(req.params.id);
+      if (id === null) return badRequest("Invalid id");
+      const ok = await repo.deleteVideoAnalysis(id);
+      if (!ok) return notFound();
+      return new Response(null, { status: 204 });
     },
   },
 

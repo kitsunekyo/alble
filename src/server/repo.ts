@@ -1,5 +1,14 @@
 import { db } from "./db/client";
-import { sessions, steps, journalEntries, type SessionRow, type StepRow, type JournalEntryRow } from "./db/schema";
+import {
+  sessions,
+  steps,
+  journalEntries,
+  videoAnalyses,
+  type SessionRow,
+  type StepRow,
+  type JournalEntryRow,
+  type VideoAnalysisRow,
+} from "./db/schema";
 import { and, asc, desc, eq, gte, isNotNull, lt, max, sql } from "drizzle-orm";
 import type { Rating } from "../shared/ratings";
 import { todayIsoString, parseIsoDate, dateToIsoString } from "../shared/dates";
@@ -14,6 +23,7 @@ import type {
   UpdateJournalEntryInput,
   JournalEntryDTO,
 } from "../shared/schemas";
+import type { SaveAnalysisInput, VideoAnalysisDTO, AnalysisMetrics } from "../shared/analysis";
 
 function toStepDTO(row: StepRow): StepDTO {
   return {
@@ -397,5 +407,54 @@ export async function deleteJournalEntry(id: number): Promise<boolean> {
   const existing = await db.select({ id: journalEntries.id }).from(journalEntries).where(eq(journalEntries.id, id)).get();
   if (!existing) return false;
   await db.delete(journalEntries).where(eq(journalEntries.id, id)).run();
+  return true;
+}
+
+// ------------------------------------------------------- video analyses
+
+function toVideoAnalysisDTO(row: VideoAnalysisRow): VideoAnalysisDTO {
+  return {
+    id: row.id,
+    date: row.date,
+    file_name: row.file_name,
+    started_at: row.started_at,
+    created_at: row.created_at,
+    metrics: JSON.parse(row.metrics) as AnalysisMetrics,
+  };
+}
+
+export async function createVideoAnalysis(input: SaveAnalysisInput): Promise<VideoAnalysisDTO> {
+  const created = await db
+    .insert(videoAnalyses)
+    .values({
+      date: input.date,
+      file_name: input.file_name,
+      started_at: input.started_at,
+      metrics: JSON.stringify(input.metrics),
+      created_at: Date.now(),
+    })
+    .returning()
+    .all();
+  return toVideoAnalysisDTO(created[0]!);
+}
+
+export async function listVideoAnalyses(): Promise<VideoAnalysisDTO[]> {
+  const rows = await db
+    .select()
+    .from(videoAnalyses)
+    .orderBy(asc(videoAnalyses.date), asc(videoAnalyses.created_at))
+    .all();
+  return rows.map(toVideoAnalysisDTO);
+}
+
+export async function getVideoAnalysis(id: number): Promise<VideoAnalysisDTO | null> {
+  const row = await db.select().from(videoAnalyses).where(eq(videoAnalyses.id, id)).get();
+  return row ? toVideoAnalysisDTO(row) : null;
+}
+
+export async function deleteVideoAnalysis(id: number): Promise<boolean> {
+  const existing = await db.select({ id: videoAnalyses.id }).from(videoAnalyses).where(eq(videoAnalyses.id, id)).get();
+  if (!existing) return false;
+  await db.delete(videoAnalyses).where(eq(videoAnalyses.id, id)).run();
   return true;
 }

@@ -8,6 +8,7 @@ const routeConfig: Record<string, RouteConfig> = {
   "/history": { title: "Verlauf" },
   "/charts": { title: "Diagramme" },
   "/journal": { title: "Tagebuch" },
+  "/analysis": { title: "Analyse" },
   "/settings": { title: "Einstellungen" },
   "/login": { title: null, hideHeader: true },
   "/~offline": { title: null, hideHeader: true },

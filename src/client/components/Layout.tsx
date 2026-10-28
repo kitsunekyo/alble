@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ArrowLeft, CalendarClock, History, BarChart3, BookOpen, Settings } from "lucide-react";
+import { ArrowLeft, CalendarClock, History, BarChart3, BookOpen, Clapperboard, Settings } from "lucide-react";
 import { getRouteConfig, getParentPath, shouldHideHeader } from "@/client/lib/routes";
 import { cn } from "@/client/lib/utils";
 
@@ -64,7 +64,7 @@ function Header({ pathname }: { pathname: string }) {
         )}
       </div>
 
-      <div className="flex h-10 w-14 items-center justify-end">
+      <div className="flex h-10 w-24 items-center justify-end gap-2">
         {isHome && <OverflowMenu />}
       </div>
     </header>
@@ -73,13 +73,22 @@ function Header({ pathname }: { pathname: string }) {
 
 function OverflowMenu() {
   return (
-    <Link
-      href="/settings"
-      aria-label="Einstellungen"
-      className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors"
-    >
-      <Settings className="size-5" />
-    </Link>
+    <>
+      <Link
+        href="/analysis"
+        aria-label="Analyse"
+        className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors"
+      >
+        <Clapperboard className="size-5" />
+      </Link>
+      <Link
+        href="/settings"
+        aria-label="Einstellungen"
+        className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors"
+      >
+        <Settings className="size-5" />
+      </Link>
+    </>
   );
 }
 
