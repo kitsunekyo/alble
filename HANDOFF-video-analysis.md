@@ -113,6 +113,16 @@ Test video: `Kamera-01-105741-112346.mp4` (26 min, 16 kHz mono AAC,
 
 ## Gotchas (tooling, not app)
 
+- **Never run two dev servers on this repo at once.** They share `.next` and
+  corrupt each other's Turbopack cache: the next first API request can then take
+  *minutes* (`GET /api/... 200 in 3.8min`, with `next.js: 3.8min` in the log =
+  compile time), every API call queues behind it, and the UI looks frozen. If a
+  request hangs for minutes, kill all servers, `rm -rf .next`, start one.
+  A healthy cold start compiles the API route in ~1s.
+- Plain `pnpm dev` uses the **production** Turso DB from `.env`. Logging in
+  there is not local testing, and `runMigrations` will apply pending migrations
+  to production. For local work use
+  `TURSO_DATABASE_URL=file:./data/dev.db pnpm dev` (or the script below).
 - **WSL2 dev server**: launch detached from Windows:
   `Start-Process -WindowStyle Hidden wsl -ArgumentList @('-d','archlinux','--','bash','/tmp/start-alble-dev.sh')`
   (script sets `TURSO_DATABASE_URL=file:./data/test-analysis.db`, port 3100,
