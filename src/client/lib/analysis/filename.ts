@@ -27,7 +27,9 @@ export function parseReolinkTimes(fileName: string): ParsedTimes | null {
 
 export function fmtClock(startSec: number | null, offset: number): string {
   if (startSec === null) return "--:--:--";
-  const total = Math.floor(startSec + Math.round(offset));
+  // Truncate like the CLI (datetime + timedelta -> strftime drops the fraction),
+  // so exported clocks line up with detect_sounds.py's CSV.
+  const total = Math.floor(startSec + offset);
   const sec = ((total % 86400) + 86400) % 86400;
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);

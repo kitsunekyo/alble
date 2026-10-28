@@ -17,7 +17,7 @@ export const BAND_CORE = [250, 800] as const; // tonal dog vocal core
 export const BAND_MID = [800, 3000] as const; // bark spread
 export const BAND_HF = [3000, 7400] as const; // hiss/tags
 
-/** FFT length: next power of two >= NFFT (zero-padded). */
-export const FFT_LEN = 1024;
+/** Convolution length for the Bluestein DFT: next power of two >= 2 * NFFT - 1. */
+export const CONV_LEN = 2048;
 
 export const MAX_FILE_BYTES = 2 * 1024 * 1024 * 1024; // ~2 GB browser ArrayBuffer limit

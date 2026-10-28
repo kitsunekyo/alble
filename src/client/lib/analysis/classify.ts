@@ -1,6 +1,6 @@
-import { BAND_HF, BAND_LF, BAND_MID, BAND_CORE, FFT_LEN, NFFT, SR } from "./constants";
+import { BAND_HF, BAND_LF, BAND_MID, BAND_CORE, CONV_LEN, NFFT, SR } from "./constants";
 
-/** Precomputed Hann window over NFFT samples. */
+/** Precomputed Hann window over NFFT samples (matches np.hanning). */
 const HANN = (() => {
   const w = new Float64Array(NFFT);
   for (let i = 0; i < NFFT; i++) {
@@ -9,12 +9,8 @@ const HANN = (() => {
   return w;
 })();
 
-/** Scratch buffers for the FFT (single-threaded use only). */
-const fftRe = new Float64Array(FFT_LEN);
-const fftIm = new Float64Array(FFT_LEN);
-
 /** In-place iterative radix-2 FFT. Length must be a power of two. */
-function fft(re: Float64Array, im: Float64Array): void {
+function fft(re: Float64Array, im: Float64Array, inverse = false): void {
   const n = re.length;
   // bit-reversal permutation
   for (let i = 1, j = 0; i < n; i++) {
@@ -27,8 +23,9 @@ function fft(re: Float64Array, im: Float64Array): void {
     }
   }
   // butterflies
+  const sign = inverse ? 1 : -1;
   for (let len = 2; len <= n; len <<= 1) {
-    const ang = (-2 * Math.PI) / len;
+    const ang = (sign * 2 * Math.PI) / len;
     const wRe = Math.cos(ang);
     const wIm = Math.sin(ang);
     for (let i = 0; i < n; i += len) {
@@ -49,6 +46,90 @@ function fft(re: Float64Array, im: Float64Array): void {
       }
     }
   }
+  if (inverse) {
+    for (let i = 0; i < n; i++) {
+      re[i] = re[i]! / n;
+      im[i] = im[i]! / n;
+    }
+  }
+}
+
+/**
+ * Exact NFFT-point DFT via Bluestein's chirp-z algorithm.
+ *
+ * The CLI uses `np.fft.rfft` over the 800-sample frame (20 Hz bins) and compares
+ * band edges against those exact bin frequencies. A zero-padded 1024-point FFT
+ * samples the same spectrum on a finer 15.625 Hz grid, which shifts the summed
+ * band power enough to reclassify borderline wind/rumble events. This computes
+ * the same 800 bins as the reference so band shares match.
+ */
+const CHIRP_RE = new Float64Array(NFFT);
+const CHIRP_IM = new Float64Array(NFFT);
+(() => {
+  // w[j] = exp(-i*pi*j^2/n) — reduced mod 2n to keep the angle small
+  const mod = 2 * NFFT;
+  const jsq = new Float64Array(NFFT);
+  for (let j = 0; j < NFFT; j++) {
+    const sq = (j * j) % mod;
+    jsq[j] = sq;
+    const ang = (-Math.PI * sq) / NFFT;
+    CHIRP_RE[j] = Math.cos(ang);
+    CHIRP_IM[j] = Math.sin(ang);
+  }
+})();
+
+/** FFT of the chirp kernel b (precomputed once). */
+const KERNEL_RE = new Float64Array(CONV_LEN);
+const KERNEL_IM = new Float64Array(CONV_LEN);
+(() => {
+  // b[j] = conj(w[j]) for 0 <= j < n; b[M-j] = conj(w[j]) for 1 <= j < n
+  for (let j = 0; j < NFFT; j++) {
+    KERNEL_RE[j] = CHIRP_RE[j]!;
+    KERNEL_IM[j] = -CHIRP_IM[j]!;
+    if (j > 0) {
+      KERNEL_RE[CONV_LEN - j] = CHIRP_RE[j]!;
+      KERNEL_IM[CONV_LEN - j] = -CHIRP_IM[j]!;
+    }
+  }
+  fft(KERNEL_RE, KERNEL_IM);
+})();
+
+/** Scratch buffers for the per-frame transform (single-threaded use only). */
+const dftRe = new Float64Array(CONV_LEN);
+const dftIm = new Float64Array(CONV_LEN);
+
+/** Run one frame through the exact NFFT-point DFT; writes bins into dftRe/dftIm. */
+function dftFrame(x: Float32Array, off: number): void {
+  for (let j = 0; j < NFFT; j++) {
+    const v = x[off + j]! * HANN[j]!;
+    dftRe[j] = v * CHIRP_RE[j]!;
+    dftIm[j] = v * CHIRP_IM[j]!;
+  }
+  for (let j = NFFT; j < CONV_LEN; j++) {
+    dftRe[j] = 0;
+    dftIm[j] = 0;
+  }
+  fft(dftRe, dftIm);
+
+  for (let k = 0; k < CONV_LEN; k++) {
+    const aRe = dftRe[k]!;
+    const aIm = dftIm[k]!;
+    const bRe = KERNEL_RE[k]!;
+    const bIm = KERNEL_IM[k]!;
+    dftRe[k] = aRe * bRe - aIm * bIm;
+    dftIm[k] = aRe * bIm + aIm * bRe;
+  }
+  fft(dftRe, dftIm, true);
+
+  // X[k] = w[k] * conv[k]
+  for (let k = 0; k < NFFT; k++) {
+    const cRe = dftRe[k]!;
+    const cIm = dftIm[k]!;
+    const wRe = CHIRP_RE[k]!;
+    const wIm = CHIRP_IM[k]!;
+    dftRe[k] = cRe * wRe - cIm * wIm;
+    dftIm[k] = cRe * wIm + cIm * wRe;
+  }
 }
 
 export interface SpectralFeatures {
@@ -56,23 +137,28 @@ export interface SpectralFeatures {
   domHz: number;
 }
 
-const BIN_HZ = SR / FFT_LEN;
+const BIN_HZ = SR / NFFT; // 20 Hz — same grid as np.fft.rfftfreq(NFFT, 1/SR)
 
-function binOf(hz: number): number {
-  return Math.max(0, Math.round(hz / BIN_HZ));
+/** First bin whose frequency is >= hz. */
+function binFrom(hz: number): number {
+  return Math.min(NFFT, Math.max(0, Math.ceil((hz * NFFT) / SR)));
 }
 
-const LF_RANGE = [binOf(BAND_LF[0]), binOf(BAND_LF[1])] as const;
-const CORE_RANGE = [binOf(BAND_CORE[0]), binOf(BAND_CORE[1])] as const;
-const MID_RANGE = [binOf(BAND_MID[0]), binOf(BAND_MID[1])] as const;
-const HF_RANGE = [binOf(BAND_HF[0]), binOf(BAND_HF[1])] as const;
-const DOM_MIN = binOf(60);
-const DOM_MAX = binOf(7400);
+function rangeOf(lo: number, hi: number): [number, number] {
+  return [binFrom(lo), binFrom(hi)];
+}
 
-function bandPower(re: Float64Array, im: Float64Array, from: number, to: number): number {
+const LF_RANGE = rangeOf(BAND_LF[0], BAND_LF[1]);
+const CORE_RANGE = rangeOf(BAND_CORE[0], BAND_CORE[1]);
+const MID_RANGE = rangeOf(BAND_MID[0], BAND_MID[1]);
+const HF_RANGE = rangeOf(BAND_HF[0], BAND_HF[1]);
+const DOM_MIN = binFrom(60);
+const DOM_MAX = Math.floor((7400 * NFFT) / SR); // inclusive
+
+function bandPower(from: number, to: number): number {
   let sum = 0;
   for (let k = from; k < to; k++) {
-    sum += re[k]! * re[k]! + im[k]! * im[k]!;
+    sum += dftRe[k]! * dftRe[k]! + dftIm[k]! * dftIm[k]!;
   }
   return sum;
 }
@@ -80,14 +166,9 @@ function bandPower(re: Float64Array, im: Float64Array, from: number, to: number)
 /**
  * Spectral features of one event (frames [f0, f1)): band power shares and the
  * dominant frequency of the loudest frame. Mirrors the CLI's
- * spectral_features(), with the FFT zero-padded to 1024 points.
+ * spectral_features() bin for bin.
  */
-export function spectralFeatures(
-  x: Float32Array,
-  f0: number,
-  f1: number,
-  peakDb: (i: number) => number,
-): SpectralFeatures {
+export function spectralFeatures(x: Float32Array, f0: number, f1: number): SpectralFeatures {
   const hop = Math.round(SR * 0.025);
   const band = { lf: 0, core: 0, mid: 0, hf: 0 };
   let domHz = 0;
@@ -96,24 +177,16 @@ export function spectralFeatures(
   for (let i = f0; i < f1; i++) {
     const off = i * hop;
     if (off + NFFT > x.length) break;
-    for (let k = 0; k < NFFT; k++) {
-      fftRe[k] = x[off + k]! * HANN[k]!;
-      fftIm[k] = 0;
-    }
-    for (let k = NFFT; k < FFT_LEN; k++) {
-      fftRe[k] = 0;
-      fftIm[k] = 0;
-    }
-    fft(fftRe, fftIm);
+    dftFrame(x, off);
 
-    band.lf += bandPower(fftRe, fftIm, LF_RANGE[0], LF_RANGE[1]);
-    band.core += bandPower(fftRe, fftIm, CORE_RANGE[0], CORE_RANGE[1]);
-    band.mid += bandPower(fftRe, fftIm, MID_RANGE[0], MID_RANGE[1]);
-    band.hf += bandPower(fftRe, fftIm, HF_RANGE[0], HF_RANGE[1]);
+    band.lf += bandPower(LF_RANGE[0], LF_RANGE[1]);
+    band.core += bandPower(CORE_RANGE[0], CORE_RANGE[1]);
+    band.mid += bandPower(MID_RANGE[0], MID_RANGE[1]);
+    band.hf += bandPower(HF_RANGE[0], HF_RANGE[1]);
 
-    // dominant frequency (60 Hz .. 7.4 kHz)
-    for (let k = DOM_MIN; k < DOM_MAX; k++) {
-      const mag = fftRe[k]! * fftRe[k]! + fftIm[k]! * fftIm[k]!;
+    // dominant frequency (60 Hz .. 7.4 kHz, inclusive)
+    for (let k = DOM_MIN; k <= DOM_MAX; k++) {
+      const mag = dftRe[k]! * dftRe[k]! + dftIm[k]! * dftIm[k]!;
       if (mag > domMag) {
         domMag = mag;
         domHz = k * BIN_HZ;
@@ -121,7 +194,6 @@ export function spectralFeatures(
     }
   }
 
-  void peakDb;
   const total = band.lf + band.core + band.mid + band.hf + 1e-20;
   return {
     shares: {

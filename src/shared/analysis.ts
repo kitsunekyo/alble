@@ -44,6 +44,16 @@ export const analysisMetricsSchema = z.object({
 });
 export type AnalysisMetrics = z.infer<typeof analysisMetricsSchema>;
 
+/**
+ * Seconds of whine/cry in an analysis. `soundSeconds` is the sum over *all*
+ * events (barks included), so it can't be shown next to a whine count.
+ */
+export function whineSecondsOf(metrics: AnalysisMetrics): number {
+  let total = 0;
+  for (const e of metrics.events) if (e.ty === "whine") total += e.d;
+  return Math.round(total);
+}
+
 export const saveAnalysisSchema = z.object({
   date: z.iso.date(), // training day this recording belongs to
   file_name: z.string().min(1).max(300),

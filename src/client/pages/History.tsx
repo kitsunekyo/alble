@@ -16,7 +16,7 @@ import {
 import { useAnalyses, useDeleteAnalysis } from "@/client/hooks/use-analyses";
 import { TimelineChart } from "@/client/components/analysis/TimelineChart";
 import { clockToSecOfDay } from "@/client/lib/analysis/filename";
-import type { AnalysisMetrics } from "@/shared/analysis";
+import { whineSecondsOf, type AnalysisMetrics } from "@/shared/analysis";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
@@ -509,7 +509,7 @@ function SessionAnalyses({ date }: { date: string | null }) {
               <div className="text-xs text-muted-foreground">
                 {a.started_at ? `ab ${a.started_at} Uhr · ` : ""}
                 {a.metrics.counts.bark + a.metrics.counts.whine} Geräusche ·{" "}
-                {a.metrics.counts.whine} Jammern ({formatDuration(a.metrics.soundSeconds)}) ·{" "}
+                {a.metrics.counts.whine} Jammern ({formatDuration(whineSecondsOf(a.metrics))}) ·{" "}
                 {a.metrics.counts.bark} Bellen · {a.metrics.episodes.length} Episoden
               </div>
             </div>

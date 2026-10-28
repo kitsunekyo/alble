@@ -46,7 +46,7 @@ export async function analyzeVideo(
   for (const ev of raw) {
     const f0 = Math.floor(ev.startS / HOP);
     const f1 = Math.floor(ev.endS / HOP) + 1;
-    const { shares, domHz } = spectralFeatures(x, f0, f1, () => energies.db[ev.peakI]!);
+    const { shares, domHz } = spectralFeatures(x, f0, f1);
     const dur = ev.endS - ev.startS + HOP;
     const type = classify(shares, dur);
     if (type === "wind") {
