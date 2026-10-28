@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AnalysisEpisode, AnalysisEvent } from "@/shared/analysis";
 import { fmtClock, fmtRel } from "@/client/lib/analysis/filename";
 
@@ -45,6 +45,8 @@ export function TimelineChart({
   videoRef,
 }: TimelineChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const playheadRef = useRef<SVGGElement>(null);
+  const playheadLabelRef = useRef<SVGTextElement>(null);
   const [hover, setHover] = useState<{ ev: AnalysisEvent; px: number; py: number } | null>(null);
   const [cursorX, setCursorX] = useState<number | null>(null);
 
@@ -116,6 +118,68 @@ export function TimelineChart({
       })),
     [events, dur],
   );
+
+  // Playhead: follows the video's current position. Updated imperatively (no
+  // React state) so 60 fps scrubbing never re-renders the whole SVG.
+  useEffect(() => {
+    const v = videoRef?.current;
+    if (!v) return;
+    let raf = 0;
+
+    const apply = () => {
+      const g = playheadRef.current;
+      if (!g) return;
+      const t = Math.min(Math.max(v.currentTime || 0, 0), dur);
+      const px = ML + (t / dur) * PW;
+      g.setAttribute("transform", `translate(${px.toFixed(2)} 0)`);
+      g.setAttribute("visibility", "visible");
+      const label = playheadLabelRef.current;
+      if (label) {
+        label.textContent = fmtRel(t);
+        // x is relative to the playhead group; flip to the right side of the
+        // line when it would be clipped at the left edge of the plot.
+        const left = px - 6 >= ML + 34;
+        label.setAttribute("x", left ? "-6" : "6");
+        label.setAttribute("text-anchor", left ? "end" : "start");
+      }
+    };
+
+    const loop = () => {
+      apply();
+      raf = requestAnimationFrame(loop);
+    };
+    const start = () => {
+      cancelAnimationFrame(raf);
+      apply();
+      raf = requestAnimationFrame(loop);
+    };
+    const stop = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      apply();
+    };
+
+    apply();
+    v.addEventListener("timeupdate", apply);
+    v.addEventListener("seeked", apply);
+    v.addEventListener("loadedmetadata", apply);
+    v.addEventListener("play", start);
+    v.addEventListener("playing", start);
+    v.addEventListener("pause", stop);
+    v.addEventListener("ended", stop);
+    if (!v.paused) start();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      v.removeEventListener("timeupdate", apply);
+      v.removeEventListener("seeked", apply);
+      v.removeEventListener("loadedmetadata", apply);
+      v.removeEventListener("play", start);
+      v.removeEventListener("playing", start);
+      v.removeEventListener("pause", stop);
+      v.removeEventListener("ended", stop);
+    };
+  }, [videoRef, dur]);
 
   function seek(t: number) {
     const v = videoRef?.current;
@@ -293,6 +357,18 @@ export function TimelineChart({
             </text>
           </g>
         )}
+
+        {/* playhead — current video position */}
+        {videoRef && (
+          <g ref={playheadRef} visibility="hidden" pointerEvents="none">
+            <line x1={0} x2={0} y1={MT} y2={AXIS_Y} stroke="#0284c7" strokeWidth={4} opacity={0.18} />
+            <line x1={0} x2={0} y1={MT} y2={AXIS_Y} stroke="#0284c7" strokeWidth={1.5} />
+            <path d={`M-4 ${MT - 7} h8 l-4 7 Z`} fill="#0284c7" />
+            <text ref={playheadLabelRef} x={-6} y={12} textAnchor="end" fill="#0284c7" fontSize={10.5} fontWeight={600}>
+              {fmtRel(0)}
+            </text>
+          </g>
+        )}
       </svg>
 
       {/* tooltip */}
@@ -332,6 +408,12 @@ export function TimelineChart({
           />
           leise → laut
         </span>
+        {videoRef && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-0.5 rounded-sm" style={{ background: "#0284c7" }} />
+            aktuelle Videoposition
+          </span>
+        )}
         {videoRef && <span>· Punkt antippen um im Video dorthin zu springen</span>}
       </div>
     </div>

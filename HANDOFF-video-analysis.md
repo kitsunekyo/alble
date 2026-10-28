@@ -8,7 +8,8 @@ PRD: `docs/PRD-video-analysis.md` · CLI reference: `C:\Users\alexa\Videos\reoli
 Client-side video sound analysis for the Alble app: drop a Reolink MP4 in the
 browser ("Analyse", entry via Clapperboard icon on the Heute header — no bottom
 nav), analyze locally (Web Audio API + ported DSP, **no upload, no WASM**), report
-with timeline/hotspots/click-to-seek video scrubbing, presets
+with timeline/hotspots/click-to-seek video scrubbing and a **playhead line that
+follows the video's current position**, presets
 ("Alle Geräusche" / "Jammern & Weinen" / "Bellen"), optional save of metrics
 (no audio/video) to the training day, History card with re-rendered timeline,
 Charts group "Lautäußerungen" (Jammern-Sekunden/Tag bars + Bellen line).
