@@ -26,6 +26,22 @@ function ensureMigrations() {
  */
 const MIGRATION_EXEMPT = new Set(["/api/auth/check"]);
 
+/** Never let a stalled migration hold a request open forever. */
+const MIGRATION_WAIT_MS = 15_000;
+
+async function ensureMigrationsReady(): Promise<boolean> {
+  const migrations = ensureMigrations();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<false>((resolve) => {
+    timer = setTimeout(() => resolve(false), MIGRATION_WAIT_MS);
+  });
+  try {
+    return await Promise.race([migrations.then(() => true as const), timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 function isAuthRoute(path: string): boolean {
   return path.startsWith("/api/auth/");
 }
@@ -63,7 +79,14 @@ export async function handleApiRequest(request: Request): Promise<Response> {
     const path = url.pathname;
     const method = request.method;
 
-    if (!MIGRATION_EXEMPT.has(path)) await ensureMigrations();
+    if (!MIGRATION_EXEMPT.has(path) && !(await ensureMigrationsReady())) {
+      return new Response(
+        JSON.stringify({
+          error: "Datenbank wird noch vorbereitet — bitte gleich noch einmal versuchen.",
+        }),
+        { status: 503, headers: { "content-type": "application/json" } },
+      );
+    }
 
     if (!isAuthRoute(path)) {
       const authRes = await requireAuth(request);

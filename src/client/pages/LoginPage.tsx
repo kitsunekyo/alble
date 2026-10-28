@@ -63,8 +63,16 @@ export function LoginPage() {
         return;
       }
       window.location.href = redirectTo;
-    } catch {
-      setError("Verbindungsfehler");
+    } catch (err) {
+      // In dev, surface *why* the request failed (timeout vs. server down vs.
+      // crash) instead of a bare "Verbindungsfehler".
+      const detail = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      console.error("[login] request failed", err);
+      setError(
+        process.env.NODE_ENV === "development"
+          ? `Verbindungsfehler (${detail})`
+          : "Verbindungsfehler",
+      );
     } finally {
       setLoading(false);
     }
