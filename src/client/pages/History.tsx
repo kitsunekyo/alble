@@ -13,6 +13,10 @@ import {
   useDeleteStep,
   useUpdateStep,
 } from "@/client/hooks/use-sessions";
+import { useAnalyses, useDeleteAnalysis } from "@/client/hooks/use-analyses";
+import { TimelineChart } from "@/client/components/analysis/TimelineChart";
+import { clockToSecOfDay } from "@/client/lib/analysis/filename";
+import { whineSecondsOf, type AnalysisMetrics } from "@/shared/analysis";
 import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Textarea } from "@/client/components/ui/textarea";
@@ -472,10 +476,95 @@ function SessionCard({ session }: { session: SessionDTO }) {
               <StepRow key={step.id} step={step} />
             ))}
           </div>
+
+          <SessionAnalyses date={session.date} />
         </div>
       )}
     </Card>
   );
+}
+
+/** Saved video analyses ("Lautäußerungen") attached to this training day. */
+function SessionAnalyses({ date }: { date: string | null }) {
+  const analyses = useAnalyses();
+  const deleteAnalysis = useDeleteAnalysis();
+
+  const items = useMemo(() => {
+    if (!date) return [];
+    return (analyses.data ?? []).filter((a) => a.date === date);
+  }, [analyses.data, date]);
+
+  if (!date || items.length === 0) return null;
+
+  return (
+    <div className="space-y-2 pt-1">
+      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Lautäußerungen
+      </div>
+      {items.map((a) => (
+        <Card key={a.id} className="p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <div className="flex-1 min-w-0 text-sm">
+              <div className="font-medium truncate">{a.file_name}</div>
+              <div className="text-xs text-muted-foreground">
+                {a.started_at ? `ab ${a.started_at} Uhr · ` : ""}
+                {a.metrics.counts.bark + a.metrics.counts.whine} Geräusche ·{" "}
+                {a.metrics.counts.whine} Jaulen ({formatDuration(whineSecondsOf(a.metrics))}) ·{" "}
+                {a.metrics.counts.bark} Winseln · {a.metrics.episodes.length} Episoden
+              </div>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Analyse löschen">
+                  <Trash2 className="size-3.5 text-destructive" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Analyse löschen?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Die gespeicherten Metriken von {a.file_name} werden endgültig entfernt.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() =>
+                      deleteAnalysis.mutate(a.id, {
+                        onError: (e) => toast.error(e.message),
+                      })
+                    }
+                  >
+                    Löschen
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <TimelineChart
+            durationSeconds={a.metrics.durationSeconds}
+            level={a.metrics.level}
+            startedAt={a.started_at !== null ? clockToSecOfDay(a.started_at) : null}
+            curve={a.metrics.events.length > 0 ? buildStoredCurve(a.metrics) : []}
+            events={a.metrics.events}
+            episodes={a.metrics.episodes}
+          />
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/** Rebuild a coarse per-second curve from stored events (no raw audio kept). */
+function buildStoredCurve(metrics: AnalysisMetrics): number[] {
+  const nSec = Math.ceil(metrics.durationSeconds) + 1;
+  const curve = new Array<number>(nSec).fill(-90);
+  for (const e of metrics.events) {
+    for (let i = Math.floor(e.s); i <= Math.min(Math.floor(e.e), nSec - 1); i++) {
+      if (e.pk > curve[i]!) curve[i] = e.pk;
+    }
+  }
+  return curve;
 }
 
 function StepRow({ step }: { step: StepDTO }) {

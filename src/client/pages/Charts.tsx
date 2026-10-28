@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useSessions } from "@/client/hooks/use-sessions";
+import { useAnalyses } from "@/client/hooks/use-analyses";
 import { RATINGS, RATING_COLORS, RATING_SCORE, type Rating } from "@/shared/ratings";
 import { dateToIsoString, getCalendarWeek, parseIsoDate } from "@/shared/dates";
 import { parseDuration, buildData, type DateRange, type SelectionState } from "./charts/chart-data";
@@ -11,9 +12,11 @@ import { ScatterOverTime } from "./charts/ScatterOverTime";
 import { WeeklyDistribution } from "./charts/WeeklyDistribution";
 import { CorrelationChart } from "./charts/CorrelationChart";
 import { StripDistribution } from "./charts/StripDistribution";
+import { buildVocalsByDay, VocalizationsChart } from "./charts/VocalizationsChart";
 
 export function Charts() {
   const sessions = useSessions();
+  const analyses = useAnalyses();
 
   const [activeRatings, setActiveRatings] = useState<Set<Rating>>(new Set(RATINGS));
   const hasAnyActive = activeRatings.size > 0;
@@ -42,6 +45,15 @@ export function Charts() {
   }, [sessions.data, dateRange]);
 
   const data = useMemo(() => buildData(filteredSessions, activeRatings), [filteredSessions, activeRatings]);
+
+  const vocalsDays = useMemo(() => {
+    const list = analyses.data ?? [];
+    if (dateRange === "all") return buildVocalsByDay(list);
+    const cutoff = Date.now() - parseDuration(dateRange);
+    return buildVocalsByDay(
+      list.filter((a) => new Date(a.date).getTime() >= cutoff),
+    );
+  }, [analyses.data, dateRange]);
 
   const stats = useMemo(() => {
     const filtered = sessions.data ?? [];
@@ -238,6 +250,8 @@ export function Charts() {
           </div>
         </div>
       )}
+
+      <VocalizationsChart days={vocalsDays} />
     </div>
   );
 }

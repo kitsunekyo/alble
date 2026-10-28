@@ -18,13 +18,31 @@ export function LoginPage() {
   const redirectTo = searchParams.get("redirect") ?? "/";
 
   useEffect(() => {
-    fetch("/api/auth/check")
+    let cancelled = false;
+    const ctrl = new AbortController();
+    // This check is only a convenience redirect for visitors who are already
+    // signed in — it must never keep the form hidden. A slow/unreachable API
+    // (dev server still compiling, database migration, offline) aborts after a
+    // few seconds and we just show the form.
+    const timer = window.setTimeout(() => ctrl.abort(), 5000);
+    fetch("/api/auth/check", { signal: ctrl.signal })
       .then((res) => {
-        if (res.ok) {
+        if (res.ok && !cancelled) {
           window.location.href = redirectTo;
         }
       })
-      .finally(() => setChecking(false));
+      .catch(() => {
+        // aborted or offline — fall through to the login form
+      })
+      .finally(() => {
+        window.clearTimeout(timer);
+        if (!cancelled) setChecking(false);
+      });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      ctrl.abort();
+    };
   }, [redirectTo]);
 
   async function submit(e: React.FormEvent) {
@@ -32,10 +50,12 @@ export function LoginPage() {
     setError(null);
     setLoading(true);
     try {
+      // Bounded wait: a stuck server must surface as an error, not a spinner.
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ password }),
+        signal: AbortSignal.timeout(20000),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -43,8 +63,16 @@ export function LoginPage() {
         return;
       }
       window.location.href = redirectTo;
-    } catch {
-      setError("Verbindungsfehler");
+    } catch (err) {
+      // In dev, surface *why* the request failed (timeout vs. server down vs.
+      // crash) instead of a bare "Verbindungsfehler".
+      const detail = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      console.error("[login] request failed", err);
+      setError(
+        process.env.NODE_ENV === "development"
+          ? `Verbindungsfehler (${detail})`
+          : "Verbindungsfehler",
+      );
     } finally {
       setLoading(false);
     }

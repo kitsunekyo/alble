@@ -44,6 +44,16 @@ export const journalEntries = sqliteTable("journal_entries", {
   created_at: integer("created_at").notNull(),
 });
 
+export const videoAnalyses = sqliteTable("video_analyses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  date: text("date").notNull(), // training day (YYYY-MM-DD)
+  file_name: text("file_name").notNull(),
+  started_at: text("started_at"), // recording clock start (HH:MM:SS) from filename
+  metrics: text("metrics").notNull(), // JSON AnalysisMetrics (no audio/video)
+  created_at: integer("created_at").notNull(),
+});
+
 export type SessionRow = typeof sessions.$inferSelect;
 export type StepRow = typeof steps.$inferSelect;
 export type JournalEntryRow = typeof journalEntries.$inferSelect;
+export type VideoAnalysisRow = typeof videoAnalyses.$inferSelect;

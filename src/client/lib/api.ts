@@ -9,6 +9,7 @@ import type {
   UpdateJournalEntryInput,
   JournalEntryDTO,
 } from "@/shared/schemas";
+import type { SaveAnalysisInput, VideoAnalysisDTO } from "@/shared/analysis";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -80,6 +81,10 @@ export const api = {
     });
   },
   wipe: () => request<void>("/api/wipe", { method: "POST" }),
+  saveAnalysis: (input: SaveAnalysisInput) =>
+    request<VideoAnalysisDTO>("/api/analyses", { method: "POST", body: JSON.stringify(input) }),
+  listAnalyses: () => request<VideoAnalysisDTO[]>("/api/analyses"),
+  deleteAnalysis: (id: number) => request<void>(`/api/analyses/${id}`, { method: "DELETE" }),
   journal: {
     list: (params?: { days?: number; offset?: number }) => {
       const qp = params ? new URLSearchParams() : undefined;
