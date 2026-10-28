@@ -61,11 +61,11 @@ export function VocalizationsChart({ days }: { days: VocalsDay[] }) {
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-            Jammern/Weinen (Sekunden)
+            Jaulen/Weinen (Sekunden)
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
-            Bellen (Anzahl)
+            Winseln (Anzahl)
           </span>
         </div>
       </div>
@@ -78,7 +78,7 @@ export function VocalizationsChart({ days }: { days: VocalsDay[] }) {
               yAxisId="seconds"
               tick={COMMON_TICK}
               label={{
-                value: "Jammern (Sek.)",
+                value: "Jaulen (Sek.)",
                 position: "insideLeft",
                 angle: -90,
                 dy: 40,
@@ -93,7 +93,7 @@ export function VocalizationsChart({ days }: { days: VocalsDay[] }) {
               allowDecimals={false}
               tick={COMMON_TICK}
               label={{
-                value: "Bellen (Anzahl)",
+                value: "Winseln (Anzahl)",
                 position: "insideRight",
                 angle: 90,
                 dy: -40,
@@ -110,12 +110,12 @@ export function VocalizationsChart({ days }: { days: VocalsDay[] }) {
                     <div className="font-medium mb-1">{day.date}</div>
                     <div className="flex items-center gap-1.5">
                       <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                      <span>Jammern/Weinen:</span>
+                      <span>Jaulen/Weinen:</span>
                       <span className="tabular-nums font-medium">{formatDuration(Math.round(day.whineSeconds))}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
-                      <span>Bellen:</span>
+                      <span>Winseln:</span>
                       <span className="tabular-nums font-medium">{day.barkCount}</span>
                     </div>
                     <div className="border-t mt-1.5 pt-1 text-muted-foreground">
@@ -128,7 +128,7 @@ export function VocalizationsChart({ days }: { days: VocalsDay[] }) {
             <Bar
               yAxisId="seconds"
               dataKey="whineSeconds"
-              name="Jammern (Sekunden)"
+              name="Jaulen (Sekunden)"
               fill="#ef4444"
               fillOpacity={0.75}
               radius={[3, 3, 0, 0]}
@@ -137,7 +137,7 @@ export function VocalizationsChart({ days }: { days: VocalsDay[] }) {
             <Line
               yAxisId="count"
               dataKey="barkCount"
-              name="Bellen (Anzahl)"
+              name="Winseln (Anzahl)"
               stroke="#3b82f6"
               strokeWidth={2}
               dot={{ r: 3, fill: "#3b82f6" }}

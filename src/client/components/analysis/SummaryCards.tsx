@@ -24,12 +24,12 @@ export function SummaryCards({ count, bark, whine, whineSeconds, episodes, windE
       </Card>
       <Card className="p-4">
         <div className="text-2xl font-semibold tabular-nums text-red-600 dark:text-red-400">{whine}</div>
-        <div className="text-xs text-muted-foreground mt-1">Jammern / Weinen</div>
+        <div className="text-xs text-muted-foreground mt-1">Jaulen / Weinen</div>
         <div className="text-[11px] text-muted-foreground/80">{formatDuration(whineSeconds)} insgesamt</div>
       </Card>
       <Card className="p-4">
         <div className="text-2xl font-semibold tabular-nums text-blue-600 dark:text-blue-400">{bark}</div>
-        <div className="text-xs text-muted-foreground mt-1">Bellen</div>
+        <div className="text-xs text-muted-foreground mt-1">Winseln</div>
       </Card>
       <Card className="p-4">
         <div className="text-2xl font-semibold tabular-nums">{episodes}</div>

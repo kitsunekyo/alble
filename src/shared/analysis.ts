@@ -8,8 +8,8 @@ export type Preset = (typeof PRESETS)[number];
 
 export const PRESET_LABELS: Record<Preset, string> = {
   all: "Alle Geräusche",
-  whine: "Jammern & Weinen",
-  bark: "Bellen",
+  whine: "Jaulen & Weinen",
+  bark: "Winseln",
 };
 
 export const ANALYSIS_EVENT_CAP = 2000;

@@ -306,7 +306,7 @@ export function TimelineChart({
           }}
         >
           <b style={{ color: hover.ev.ty === "whine" ? "#f87171" : "#60a5fa" }}>
-            {hover.ev.ty === "whine" ? "Jammern/Weinen" : "Bellen"}
+            {hover.ev.ty === "whine" ? "Jaulen/Weinen" : "Winseln"}
           </b>
           <br />
           {fmtClock(startedAt, hover.ev.s)} – {fmtClock(startedAt, hover.ev.e)} (Video {fmtRel(hover.ev.s)})
@@ -319,11 +319,11 @@ export function TimelineChart({
       <div className="text-xs text-muted-foreground mt-2 flex flex-wrap gap-x-4 gap-y-1">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full" style={{ background: TYPE_COLOR.bark }} />
-          Bellen (kurz/breitbandig)
+          Winseln (kurz/breitbandig)
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full" style={{ background: TYPE_COLOR.whine }} />
-          Jammern/Weinen (tonal/anhaltend)
+          Jaulen/Weinen (tonal/anhaltend)
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span

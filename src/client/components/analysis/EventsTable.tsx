@@ -45,7 +45,7 @@ export function EventsTable({ events, startedAt, fileName }: EventsTableProps) {
           <Download className="size-4" /> CSV
         </Button>
       </div>
-      <div className="max-h-80 overflow-y-auto rounded-lg border border-border">
+      <div className="max-h-80 overflow-y-auto rounded-lg border border-border bg-card">
         <table className="w-full text-sm tabular-nums">
           <thead className="sticky top-0 bg-muted/95 backdrop-blur">
             <tr className="text-left text-xs text-muted-foreground">
@@ -67,7 +67,7 @@ export function EventsTable({ events, startedAt, fileName }: EventsTableProps) {
                 <td className="px-3 py-1.5 text-right">{e.hz} Hz</td>
                 <td className="px-3 py-1.5">
                   <span className={e.ty === "whine" ? "text-red-600 dark:text-red-400" : "text-blue-600 dark:text-blue-400"}>
-                    {e.ty === "whine" ? "Jammern" : "Bellen"}
+                    {e.ty === "whine" ? "Jaulen" : "Winseln"}
                   </span>
                 </td>
               </tr>

@@ -509,8 +509,8 @@ function SessionAnalyses({ date }: { date: string | null }) {
               <div className="text-xs text-muted-foreground">
                 {a.started_at ? `ab ${a.started_at} Uhr · ` : ""}
                 {a.metrics.counts.bark + a.metrics.counts.whine} Geräusche ·{" "}
-                {a.metrics.counts.whine} Jammern ({formatDuration(whineSecondsOf(a.metrics))}) ·{" "}
-                {a.metrics.counts.bark} Bellen · {a.metrics.episodes.length} Episoden
+                {a.metrics.counts.whine} Jaulen ({formatDuration(whineSecondsOf(a.metrics))}) ·{" "}
+                {a.metrics.counts.bark} Winseln · {a.metrics.episodes.length} Episoden
               </div>
             </div>
             <AlertDialog>
