@@ -4,10 +4,27 @@ import { requireAuth } from "./auth";
 
 let migrationsPromise: Promise<void> | null = null;
 
+/**
+ * Migrations run once per process, lazily, on the first request that needs the
+ * database. A rejected attempt is not cached: otherwise one transient error
+ * (or a slow remote) would keep every API route failing until a restart.
+ */
 function ensureMigrations() {
-  migrationsPromise ??= runMigrations();
+  migrationsPromise ??= runMigrations().catch((err) => {
+    migrationsPromise = null;
+    throw err;
+  });
   return migrationsPromise;
 }
+
+/**
+ * Routes that must never wait for migrations. `/api/auth/check` is what the
+ * login page calls before showing the form: for an anonymous visitor it only
+ * needs a cookie presence check (`validateSession` returns early without a
+ * query), so making it wait on a remote migration is what turns the login
+ * screen into an endless spinner.
+ */
+const MIGRATION_EXEMPT = new Set(["/api/auth/check"]);
 
 function isAuthRoute(path: string): boolean {
   return path.startsWith("/api/auth/");
@@ -42,11 +59,11 @@ function requestWithParams(request: Request, params: Record<string, string>): Re
 
 export async function handleApiRequest(request: Request): Promise<Response> {
   try {
-    await ensureMigrations();
-
     const url = new URL(request.url, "http://localhost");
     const path = url.pathname;
     const method = request.method;
+
+    if (!MIGRATION_EXEMPT.has(path)) await ensureMigrations();
 
     if (!isAuthRoute(path)) {
       const authRes = await requireAuth(request);
