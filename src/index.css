@@ -73,6 +73,12 @@
     @apply text-foreground antialiased;
     font-family: var(--font-sans), system-ui, sans-serif;
   }
+  /* Tailwind v4 preflight sets `cursor: default` on buttons — restore the
+     expected pointer affordance for all enabled buttons. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }
 
 body {

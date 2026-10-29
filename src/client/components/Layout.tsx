@@ -49,7 +49,7 @@ function Header({ pathname }: { pathname: string }) {
             type="button"
             onClick={() => router.push(parent)}
             aria-label="Zurück"
-            className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors"
+            className="flex items-center justify-center size-10 rounded-full text-foreground bg-white hover:bg-muted/60 transition-colors cursor-pointer"
           >
             <ArrowLeft className="size-5" />
           </button>
