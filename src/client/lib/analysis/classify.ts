@@ -1,4 +1,14 @@
-import { BAND_HF, BAND_LF, BAND_MID, BAND_CORE, CONV_LEN, NFFT, SR } from "./constants";
+import {
+  BAND_HF,
+  BAND_LF,
+  BAND_MID,
+  BAND_CORE,
+  CONV_LEN,
+  HARMONY_MAX_HZ,
+  HARMONY_MIN_HZ,
+  NFFT,
+  SR,
+} from "./constants";
 
 /** Precomputed Hann window over NFFT samples (matches np.hanning). */
 const HANN = (() => {
@@ -135,6 +145,12 @@ function dftFrame(x: Float32Array, off: number): void {
 export interface SpectralFeatures {
   shares: { lf: number; core: number; mid: number; hf: number };
   domHz: number;
+  /** Power-weighted mean frequency of the event (Hz). */
+  centroid: number;
+  /** Normalized autocorrelation peak (0..1) of the loudest frame. */
+  harmony: number;
+  /** Spectral flatness of the event (0 = pure tone, ~1 = white noise). */
+  flatness: number;
 }
 
 const BIN_HZ = SR / NFFT; // 20 Hz — same grid as np.fft.rfftfreq(NFFT, 1/SR)
@@ -155,6 +171,9 @@ const HF_RANGE = rangeOf(BAND_HF[0], BAND_HF[1]);
 const DOM_MIN = binFrom(60);
 const DOM_MAX = Math.floor((7400 * NFFT) / SR); // inclusive
 
+const HARMONY_LAG_MIN = Math.ceil(SR / HARMONY_MAX_HZ);
+const HARMONY_LAG_MAX = Math.floor(SR / HARMONY_MIN_HZ);
+
 function bandPower(from: number, to: number): number {
   let sum = 0;
   for (let k = from; k < to; k++) {
@@ -164,8 +183,41 @@ function bandPower(from: number, to: number): number {
 }
 
 /**
- * Spectral features of one event (frames [f0, f1)): band power shares and the
- * dominant frequency of the loudest frame. Mirrors the CLI's
+ * Periodicity of one frame: peak of the normalized autocorrelation for lags
+ * matching HARMONY_MIN_HZ..HARMONY_MAX_HZ. ~1 for a clean tone, low for noise.
+ */
+function harmonyAt(x: Float32Array, off: number): number {
+  let mean = 0;
+  for (let k = 0; k < NFFT; k++) mean += x[off + k]!;
+  mean /= NFFT;
+
+  let energy = 0;
+  for (let k = 0; k < NFFT; k++) {
+    const v = x[off + k]! - mean;
+    energy += v * v;
+  }
+  if (energy <= 1e-12) return 0;
+
+  let best = 0;
+  for (let lag = HARMONY_LAG_MIN; lag <= HARMONY_LAG_MAX; lag++) {
+    let sum = 0;
+    for (let k = 0; k + lag < NFFT; k++) {
+      sum += (x[off + k]! - mean) * (x[off + k + lag]! - mean);
+    }
+    const r = sum / energy;
+    if (r > best) best = r;
+  }
+  return best;
+}
+
+const SPECTRUM_BINS = DOM_MAX - DOM_MIN + 1;
+/** Mean power spectrum of the current event (scratch, single-threaded use). */
+const meanSpectrum = new Float64Array(SPECTRUM_BINS);
+
+/**
+ * Spectral features of one event (frames [f0, f1)): band power shares, the
+ * dominant frequency of the loudest frame, spectral centroid, flatness and the
+ * periodicity of the loudest frame. Band shares mirror the CLI's
  * spectral_features() bin for bin.
  */
 export function spectralFeatures(x: Float32Array, f0: number, f1: number): SpectralFeatures {
@@ -173,6 +225,10 @@ export function spectralFeatures(x: Float32Array, f0: number, f1: number): Spect
   const band = { lf: 0, core: 0, mid: 0, hf: 0 };
   let domHz = 0;
   let domMag = -1;
+  let domFrame = -1;
+  let centNum = 0;
+  let centDen = 0;
+  meanSpectrum.fill(0);
 
   for (let i = f0; i < f1; i++) {
     const off = i * hop;
@@ -184,15 +240,24 @@ export function spectralFeatures(x: Float32Array, f0: number, f1: number): Spect
     band.mid += bandPower(MID_RANGE[0], MID_RANGE[1]);
     band.hf += bandPower(HF_RANGE[0], HF_RANGE[1]);
 
-    // dominant frequency (60 Hz .. 7.4 kHz, inclusive)
+    // dominant frequency (60 Hz .. 7.4 kHz, inclusive) + spectral centroid
     for (let k = DOM_MIN; k <= DOM_MAX; k++) {
       const mag = dftRe[k]! * dftRe[k]! + dftIm[k]! * dftIm[k]!;
+      centNum += k * BIN_HZ * mag;
+      centDen += mag;
+      meanSpectrum[k - DOM_MIN] = meanSpectrum[k - DOM_MIN]! + mag;
       if (mag > domMag) {
         domMag = mag;
         domHz = k * BIN_HZ;
+        domFrame = i;
       }
     }
   }
+
+  // spectral flatness of the mean spectrum: geometric / arithmetic mean power
+  let logSum = 0;
+  for (let k = 0; k < SPECTRUM_BINS; k++) logSum += Math.log(meanSpectrum[k]! + 1e-20);
+  const arith = centDen / SPECTRUM_BINS;
 
   const total = band.lf + band.core + band.mid + band.hf + 1e-20;
   return {
@@ -203,5 +268,8 @@ export function spectralFeatures(x: Float32Array, f0: number, f1: number): Spect
       hf: band.hf / total,
     },
     domHz,
+    centroid: centDen > 0 ? centNum / centDen : 0,
+    harmony: domFrame >= 0 ? harmonyAt(x, domFrame * hop) : 0,
+    flatness: arith > 0 ? Math.exp(logSum / SPECTRUM_BINS) / arith : 0,
   };
 }

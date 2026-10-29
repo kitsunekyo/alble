@@ -26,6 +26,49 @@ export interface AnalyzeOutput extends AnalysisResult {
 }
 
 /**
+ * Analyze decoded 16 kHz mono samples: frame energies -> hysteresis detection ->
+ * spectral classification -> events. Pure and side-effect free so it can be
+ * exercised outside the browser.
+ */
+export function analyzeSamples(
+  x: Float32Array,
+): Omit<AnalysisResult, "fileName" | "fileSize" | "startedAt"> {
+  const energies = frameEnergies(x);
+  const raw = detectRawEvents(energies);
+
+  const events: AnalysisEvent[] = [];
+  let windExcluded = 0;
+
+  for (const ev of raw) {
+    const f0 = Math.floor(ev.startS / HOP);
+    const f1 = Math.floor(ev.endS / HOP) + 1;
+    const f = spectralFeatures(x, f0, f1);
+    const dur = ev.endS - ev.startS + HOP;
+    const type = classify(f, dur);
+    if (type === "wind") {
+      windExcluded++;
+      continue;
+    }
+    events.push({
+      s: Math.round(ev.startS * 100) / 100,
+      e: Math.round(ev.endS * 100) / 100,
+      d: Math.round(dur * 100) / 100,
+      pk: Math.round(energies.db[ev.peakI]! * 10) / 10,
+      hz: Math.round(f.domHz),
+      ty: type,
+    });
+  }
+
+  return {
+    durationSeconds: x.length / 16000,
+    level: LEVEL,
+    curve: perSecondCurve(energies.t, energies.db),
+    events,
+    windExcluded,
+  };
+}
+
+/**
  * Analyze a video's sound entirely in the browser: decode -> frame energies ->
  * hysteresis detection -> spectral classification -> episodes.
  * The video file never leaves the browser.
@@ -37,43 +80,13 @@ export async function analyzeVideo(
   const x = await decodeMono16k(file, onStage);
 
   onStage("analyze");
-  const energies = frameEnergies(x);
-  const raw = detectRawEvents(energies);
-
-  const events: AnalysisEvent[] = [];
-  let windExcluded = 0;
-
-  for (const ev of raw) {
-    const f0 = Math.floor(ev.startS / HOP);
-    const f1 = Math.floor(ev.endS / HOP) + 1;
-    const { shares, domHz } = spectralFeatures(x, f0, f1);
-    const dur = ev.endS - ev.startS + HOP;
-    const type = classify(shares, dur);
-    if (type === "wind") {
-      windExcluded++;
-      continue;
-    }
-    events.push({
-      s: Math.round(ev.startS * 100) / 100,
-      e: Math.round(ev.endS * 100) / 100,
-      d: Math.round(dur * 100) / 100,
-      pk: Math.round(energies.db[ev.peakI]! * 10) / 10,
-      hz: Math.round(domHz),
-      ty: type,
-    });
-  }
-
   const parsed = parseReolinkTimes(file.name);
 
   return {
+    ...analyzeSamples(x),
     fileName: file.name,
     fileSize: file.size,
-    durationSeconds: x.length / 16000,
-    level: LEVEL,
     startedAt: parsed?.startSec ?? null,
-    curve: perSecondCurve(energies.t, energies.db),
-    events,
-    windExcluded,
   };
 }
 

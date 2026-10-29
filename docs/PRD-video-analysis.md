@@ -93,7 +93,10 @@ a 30 MB download and 10–25x slower processing for zero benefit on these files.
 - **FR-3** Analysis identical to `detect_sounds.py` v2 (validated against the 10272026
   recording): 50 ms/25 ms frames, threshold −40 dBFS, 6 dB hysteresis, min duration
   0.15 s, merge gap 0.35 s, episode gap 60 s, LF (<250 Hz) wind rejection,
-  bark/whine classification via band shares, dominant-Hz per event.
+  bark/whine classification via band shares + tonality/centroid, dominant-Hz per
+  event. (2026-10-29: sustained low-pitched tonal events are classified as
+  Jaulen even when their harmonics fill the 800–3000 Hz band — see
+  HANDOFF-video-analysis.md.)
 - **FR-4** Presets filter the view; defaults per PRD. Wind excluded everywhere by default.
 - **FR-5** Timeline interaction parity with the HTML prototype (verified feature):
    hover tooltips, cursor time readout, click-to-seek, episode brackets.

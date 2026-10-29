@@ -395,11 +395,11 @@ export function TimelineChart({
       <div className="text-xs text-muted-foreground mt-2 flex flex-wrap gap-x-4 gap-y-1">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full" style={{ background: TYPE_COLOR.bark }} />
-          Winseln (kurz/breitbandig)
+          Winseln (kurz/hoch)
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full" style={{ background: TYPE_COLOR.whine }} />
-          Jaulen/Weinen (tonal/anhaltend)
+          Jaulen/Weinen (tief/tonal/anhaltend)
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span

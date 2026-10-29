@@ -145,6 +145,48 @@ Test video: `Kamera-01-105741-112346.mp4` (26 min, 16 kHz mono AAC,
   (`~/.venvs/audio/bin/python` — compares 800- vs 1024-point classification on
   identical ffmpeg PCM).
 
+## Classification tuning (2026-10-29): Jaulen vs. Winseln
+
+Reported on `10292026/Kamera-01-133103-133650.mp4`: the three sustained howls at
+02:08–02:12, 02:23–02:26 and 02:52–02:58 came out as **Winseln**.
+
+Cause: the band-share rule treats `mid + hf > 0.25` as "broadband → bark". A howl
+with a 560–1000 Hz fundamental pushes its whole harmonic stack into the 800–3000 Hz
+band, so it clears that threshold even though it is long, perfectly tonal and low
+pitched.
+
+Fix (`classify.ts` + `detect.ts`, constants in one block):
+
+```
+wind   : lf > 0.5                      (unchanged)
+bark   : dur <= 0.6                    (short blip → Winseln)
+whine  : harmony >= 0.85 && flatness <= 0.08 && centroid <= 1600 Hz
+bark   : mid + hf > 0.25               (unchanged)
+whine  : otherwise                     (unchanged)
+```
+
+New per-event features (both computed in the existing frame loop, no extra pass):
+
+- `centroid` — power-weighted mean frequency (60–7400 Hz). Howls: ~660–1080 Hz,
+  whines/squeals: 2–5 kHz.
+- `harmony` — normalized autocorrelation peak of the loudest frame (150–3000 Hz
+  lag range). Howls ≥ 0.94, noise/rumble < 0.8.
+- `flatness` — spectral flatness of the mean spectrum (0 = tone, ~1 = noise).
+  Howls ≤ 0.05, mixed/noisy events ≥ 0.18. Guards against a single tonal frame
+  inside an otherwise noisy event.
+
+Checked against 5 recordings (5.8–26 min, 344 events). Only 17 events change type,
+all `bark → whine`, all of them 0.6–5.9 s long, tonal (`harmony ≥ 0.82`,
+`flatness ≤ 0.046`) and low (`centroid ≤ 1418 Hz`). The 10272026 golden file keeps
+103/107 types; its 4 flips (500.5 s, 954.9 s, 1117.9 s, 1318.9 s) are all
+howl-shaped. Nothing changes for noise, wind, short blips or high-pitched squeals.
+Runtime impact is nil (26 min video: 0.9 s of analysis in Node).
+
+Harness used (throwaway, `/tmp/opencode/audio`): `analyze.py` (Python feature
+dump, parity reference) + `feat_ts.ts`/`run.ts` (esbuild bundles of the real TS
+modules, fed with ffmpeg `-f f32le` PCM so `analyzeSamples()` is called directly —
+`analyzeVideo` is now `decodeMono16k` + `analyzeSamples`).
+
 ## Optional M3 polish (PRD §7, not started)
 
 Long-file warning, codec error states, PWA offline caching, AGENTS.md docs

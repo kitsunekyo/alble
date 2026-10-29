@@ -1,5 +1,16 @@
-import { EPISODE_GAP, HYSTERESIS, LEVEL, MERGE_GAP, MIN_DURATION, HOP } from "./constants";
+import {
+  EPISODE_GAP,
+  HOWL_MAX_CENTROID,
+  HOWL_MAX_FLATNESS,
+  HOWL_MIN_HARMONY,
+  HYSTERESIS,
+  LEVEL,
+  MERGE_GAP,
+  MIN_DURATION,
+  HOP,
+} from "./constants";
 import type { FrameEnergies } from "./dsp";
+import type { SpectralFeatures } from "./classify";
 import type { AnalysisEpisode, AnalysisEvent, SoundEventType } from "@/shared/analysis";
 
 export interface RawEvent {
@@ -62,10 +73,26 @@ export interface ClassifiableEvent extends RawEvent {
   domHz: number;
 }
 
-/** Wind/rumble filter + bark/whine heuristic (same rules as the CLI). */
-export function classify(share: { lf: number; mid: number; hf: number }, dur: number): SoundEventType | "wind" {
-  if (share.lf > 0.5) return "wind";
-  if (share.mid + share.hf > 0.25 || dur <= 0.6) return "bark";
+/**
+ * Wind/rumble filter + Winseln (bark-like) / Jaulen (whine/cry) heuristic.
+ *
+ * The band-share rule alone misclassifies howls whose fundamental is 600-1000 Hz:
+ * their harmonic stack fills the 800-3000 Hz band, `mid + hf` exceeds 0.25 and
+ * they land in "bark" even though they are long, tonal and low pitched. So a
+ * sustained, periodic, low-centroid event is always a whine (Jaulen) and only
+ * short, bright or noisy events are barks (Winseln).
+ */
+export function classify(f: SpectralFeatures, dur: number): SoundEventType | "wind" {
+  if (f.shares.lf > 0.5) return "wind";
+  if (dur <= 0.6) return "bark";
+  if (
+    f.harmony >= HOWL_MIN_HARMONY &&
+    f.flatness <= HOWL_MAX_FLATNESS &&
+    f.centroid <= HOWL_MAX_CENTROID
+  ) {
+    return "whine";
+  }
+  if (f.shares.mid + f.shares.hf > 0.25) return "bark";
   return "whine";
 }
 
