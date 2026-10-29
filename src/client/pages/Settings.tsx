@@ -70,9 +70,9 @@ export function Settings() {
         <div className="flex gap-2 items-center">
           <Button onClick={() => fileRef.current?.click()} disabled={importCsv.isPending}>
             {importCsv.isPending ? (
-              <Loader2 className="size-4 animate-spin mr-2" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Upload className="size-4 mr-2" />
+              <Upload className="size-4" />
             )}
             Datei wählen
           </Button>
@@ -89,7 +89,7 @@ export function Settings() {
         </div>
         <Button asChild variant="outline">
           <a href="/api/export/csv">
-            <Download className="size-4 mr-2" /> CSV herunterladen
+            <Download className="size-4" /> CSV herunterladen
           </a>
         </Button>
       </Card>
@@ -153,7 +153,7 @@ export function Settings() {
             }}
             disabled={changingPw}
           >
-            {changingPw ? <Loader2 className="size-4 animate-spin mr-2" /> : <KeyRound className="size-4 mr-2" />}
+            {changingPw ? <Loader2 className="size-4 animate-spin" /> : <KeyRound className="size-4" />}
             Passwort ändern
           </Button>
         </div>
@@ -170,7 +170,7 @@ export function Settings() {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" disabled={wipe.isPending}>
-              <Trash2 className="size-4 mr-2" /> Alle Daten löschen
+              <Trash2 className="size-4" /> Alle Daten löschen
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
