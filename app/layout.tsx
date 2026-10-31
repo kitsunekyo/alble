@@ -1,14 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { Providers } from "@/client/providers";
+import { ServiceWorkerCleanup } from "@/client/components/ServiceWorkerCleanup";
 import "@/index.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+// The service worker only belongs to the deployed PWA. In `next dev` it caches
+// dev chunks and RSC payloads that are invalidated on every edit, so client-side
+// navigations hang. Serwist recommends disabling it in development.
+const serviceWorkerDisabled = process.env.NODE_ENV === "development";
+
+// Self-hosted variable font instead of `next/font/google`: fetching Inter from
+// Google at startup stalls the first dev request (and Turbopack fails with
+// "Can't resolve '@vercel/turbopack-next/internal/font/google/font'" whenever
+// that fetch did not go through cleanly).
+const inter = localFont({
+  src: "../assets/fonts/inter-latin-var.woff2",
+  weight: "100 900",
+  style: "normal",
   display: "swap",
   variable: "--font-inter",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -55,7 +67,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
-        <SerwistProvider swUrl="/serwist/sw.js">
+        <SerwistProvider swUrl="/serwist/sw.js" disable={serviceWorkerDisabled}>
+          {serviceWorkerDisabled && <ServiceWorkerCleanup />}
           <Providers>{children}</Providers>
         </SerwistProvider>
       </body>
