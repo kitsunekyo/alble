@@ -15,7 +15,7 @@
     "db:studio": "drizzle-kit studio",
     "db:migrate": "node scripts/migrate.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "deploy": "vercel --prod"
+    "deploy": "pnpm dlx vercel --prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -42,13 +42,12 @@
   "devDependencies": {
     "@serwist/turbopack": "^9.5.13",
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "drizzle-kit": "^0.31.11",
     "esbuild": "^0.28.2",
     "postcss": "^8.5.32",
-    "typescript": "^6.0.3",
-    "vercel": "^54.9.1"
+    "typescript": "^6.0.3"
   }
 }

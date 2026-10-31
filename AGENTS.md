@@ -11,7 +11,7 @@ A personal tracker app for Alex and Lily to review their training progress with 
 
 ```bash
 pnpm typecheck          # TypeScript check
-pnpm exec vercel --prod  # Deploy to production
+pnpm dlx vercel --prod  # Deploy to production
 ```
 
 ## Workflow
